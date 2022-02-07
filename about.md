@@ -22,4 +22,4 @@ permalink: /about/
 ## International Institue of Forecasters
 The IIF is an organisation with forecasting researchers from all around the world who are operating in business or academia. The IIF releases the academic journal International Journal of Forecasting (IJF), as well as a more business-oriented journal Foresight: The International Journal of Applied Forecasting. 
 
-I recently gave an interview as a forecasting member of the IJF, which can be found [here](https://forecasters.org/blog/2019/04/19/member-profile-yves-sagaert/).
+I gave an interview as a forecasting member of the IJF, which can be found [here](https://forecasters.org/blog/2019/04/19/member-profile-yves-sagaert/).
