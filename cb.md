@@ -1,10 +1,21 @@
-# Azajar spagettisaus uit de balkan
+# Cooking Book
 
-:::::::::::::: {.columns}
-::: {.column width="40%"}
+## Inhoudstafel
+
+**Lunch**
+[Azajar](## Azajar spagettisaus uit de balkan)
 
 
-## Ingrediënten
+
+<!-- -------------------------------------------------- -->
+## Azajar spagettisaus uit de balkan
+Lunch | Spicy | Veggie
+**°°° | 25 min | 8 pers.
+
+![](images/spaghetti_pic.jpg)
+
+
+### Ingrediënten
 
 <!-- - <span style="color:brown;">1</span> pan -->
 - 3 rode paprika's
@@ -19,23 +30,7 @@
 - 1 fijngesneden selderij (optie)
 - 1 el. suiker (optie)
 
-:::
-::: {.column width="60%"}
-
-##
-
-$Lunch \hspace{0.15cm} | \hspace{0.15cm} Spicy \hspace{0.15cm} | \hspace{0.15cm} Veggie$
-
-![](images/spaghetti_pic.jpg){width=70%}
-
-$**°°° \hspace{0.15cm} | \hspace{0.15cm} 25    \hspace{0.05cm} min \hspace{0.15cm} | \hspace{0.15cm} 8    \hspace{0.05cm} pers.$
-
-:::
-::::::::::::::
-
-
-
-## Bereiding
+### Bereiding
 
 1. Gril de paprika, peper en aubergine in de oven (verwijder de pitjes)
 2. Mix de gegrilde groenten en doe in een steelkom
