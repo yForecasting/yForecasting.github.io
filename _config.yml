@@ -6,34 +6,34 @@ favicon: images/favicon.ico
 version: 2
 
 # Personal info
-name: Brett Harris
-title: Senior Network System Administrator
-email: brett.h@email.co.uk
-website: www.github.com/sproogen/resume-theme
+name: Yves R. Sagaert
+title: Assistant Professor | VIVES University of Applied Sciences | KU Leuven | IESÉG Management School
+email: yves.r.sagaert [at] gmail.com
+website: yForecasting.github.io
 
 # Dark Mode (true/false/never)
 darkmode: false
 
 # Social links
-twitter_username: facespics
-github_username:  sproogen
+#twitter_username: facespics
+github_username:  yForecasting
 # stackoverflow_username: "00000001"
 # dribbble_username: jekyll
 # facebook_username: jekyll
 # flickr_username: jekyll
-instagram_username: jameswgrant
-linkedin_username: jameswgrant
+# instagram_username: jameswgrant
+linkedin_username: yvessagaert
 # xing_username: jekyll
 # pinterest_username: jekyll
-youtube_username: globalmtb
+# youtube_username: globalmtb
 # googleplus_username: +jekyll
 # orcid_username: 0000-0000-0000-0000
 
 # Additional icon links
 additional_links:
-- title: itsgoingto.be
+- title: yvesrsagaert.wordpress.com
   icon: fas fa-globe
-  url: https://www.itsgoingto.be
+  url: https://yvesrsagaert.wordpress.com/
 # - title: another link
 #   icon: font awesome brand icon name (eg. fab fa-twitter) (https://fontawesome.com/icons?d=gallery&m=free)
 #   url: Link url (eg. https://google.com)
@@ -46,31 +46,32 @@ additional_links:
 
 # About Section
 # about_title: About Me
-about_profile_image: images/profile.jpg
+about_profile_image: images/Yves_Sagaert_Profielfoto_AI.jpg
 about_content: | # this will include new lines to allow paragraphs
-  Hi, my name's Brett and I'm a senior network system administrator. As well as administrating systems I also have experience making software and web apps. I have worked at a number of companies gaining teamwork and leadership skills.
+  Hi, I'm Yves R. Sagaert and I'm an Assistant Professor at VIVES University of Applied Sciences (Kortrijk, Belgium). I focus on research on Artificial Intelligence, Sales Forecasting and Leading Indicators. You can follow my [Blog Website](https://yvesrsagaert.wordpress.com/) for stories, updates and case studies. 
 
-  I am most skilled in: <mark>AWS</mark> and <mark>Eating Pizza</mark>
+  # I am most skilled in: <mark>AWS</mark> and <mark>Eating Pizza</mark>
 
 content:
   - title: Projects # Title for the section
     layout: list # Type of content section (list/text)
     content:
       - layout: top-middle
-        title: Super awesome project
-        link: github.com/sproogen
+        title: Demand Forecasting with Leading Indicators
+        # link: github.com/sproogen
         # link_text: Project Website
-        additional_links:
-          - title:  sproogen/modern-resume-theme
-            icon: fab fa-github
-            url: github.com/sproogen/modern-resume-theme
+        #additional_links:
+        #  - title:  sproogen/modern-resume-theme
+        #    icon: fab fa-github
+        #    url: github.com/sproogen/modern-resume-theme
           # - title:  Github page for project (eg. sproogen/modern-resume-theme)
           #   icon: fab fa-github
           #   url: Link to project (eg. sproogen.github.io/modern-resume-theme)
         quote: >
           This is probably one of the greatest apps ever created, if you don't agree you're probably wrong.
         description: | # this will include new lines to allow paragraphs
-          I started this project as a way if learning <mark>React</mark> and it has since grown into a fully fledged app. I have learned many skills through this and been I'm very proud of having this in my portfolio. If you don't have a project as awesome as this I would advise you make one.
+          My main research focus is on <mark>demand forecasting</mark> for <mark>supply chain management</mark>. Here, traditional models typically extraploate historical demand data to forecast future expected demand. However, external events can have a big impact. The business setting is getting more volatile and the impact of external events is increasing. I research how to extend the traditional approach with <mark>Leading Indicators</mark>. While there is a lot of external data available, the question arises how to select and include this information in a statistical forecasting model which isn't a black box. This model should be comprehensive and transparent, so that business users can understand the contribution of each piece of information. 
+          
 
   - title: Experience # Title for the section
     layout: list # Type of content section (list/text)
@@ -103,14 +104,11 @@ content:
   - title: A Little More About Me
     layout: text
     content: | # this will include new lines to allow paragraphs
-      Alongside my interests in networks and software engineering some of my other interests and hobbies are:
-      - Rock climbing
-      - Gaming
-      - Knitting
-      - [Becoming a ninja](https://www.youtube.com/watch?v=vtg4o__aRMg)
-
-      Look at this cool image  
-      ![Trees](/modern-resume-theme/images/landscape-trees.jpg "Trees")
+      International Institue of Forecasters
+        The IIF is an organisation with forecasting researchers from all around the world who are operating in business or academia. The IIF releases the academic journal International Journal of Forecasting (IJF), as well as a more business-oriented journal Foresight: The International Journal of Applied Forecasting. 
+        
+        I gave an interview as a forecasting member of the IJF, which can be found [here](https://forecasters.org/blog/2019/04/19/member-profile-yves-sagaert/).
+        ![Trees](/modern-resume-theme/images/landscape-trees.jpg "Trees")
 
 # Footer
 footer_show_references: true
