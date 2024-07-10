@@ -48,9 +48,10 @@ additional_links:
 # about_title: About Me
 about_profile_image: images/Yves_Sagaert_Profielfoto_AI.jpg
 about_content: | # this will include new lines to allow paragraphs
-  Hi, I'm Yves R. Sagaert and I'm an Assistant Professor at VIVES University of Applied Sciences (Kortrijk, Belgium). I focus on research on Artificial Intelligence, Sales Forecasting and Leading Indicators. You can follow my [Blog Website](https://yvesrsagaert.wordpress.com/) for stories, updates and case studies. 
+  Hi, I'm Yves R. Sagaert and I'm an Assistant Professor at VIVES University of Applied Sciences (Kortrijk, Belgium) and IESÉG Management School (Lille, France). My research focus is on research in Predictive AI (Artificial Intelligence), Demand Forecasting, Inventory Management, Variable Selection and Leading Indicators. 
+  
+  You can follow my <mark>[Blog](https://yvesrsagaert.wordpress.com/)</mark> for stories, updates and case studies. 
 
-  # I am most skilled in: <mark>AWS</mark> and <mark>Eating Pizza</mark>
 
 content:
   - title: Projects # Title for the section
@@ -68,10 +69,21 @@ content:
           #   icon: fab fa-github
           #   url: Link to project (eg. sproogen.github.io/modern-resume-theme)
         quote: >
-          This is probably one of the greatest apps ever created, if you don't agree you're probably wrong.
+          It's better to look ahead and prepare, than to look back and regret. Map out your future path - but do it in pencil.
         description: | # this will include new lines to allow paragraphs
           My main research focus is on <mark>demand forecasting</mark> for <mark>supply chain management</mark>. Here, traditional models typically extraploate historical demand data to forecast future expected demand. However, external events can have a big impact. The business setting is getting more volatile and the impact of external events is increasing. I research how to extend the traditional approach with <mark>Leading Indicators</mark>. While there is a lot of external data available, the question arises how to select and include this information in a statistical forecasting model which isn't a black box. This model should be comprehensive and transparent, so that business users can understand the contribution of each piece of information. 
           
+  - title: In the press
+    layout: text
+    content: | # this will include new lines to allow paragraphs
+      **Impact with Applied AI research**
+        I gave an interview on how applied research can help SMEs and what the impact can be on the production floor. The article is available in [NL](pdf/Interview_YvesRSagaert_WestVlaanderenWerkt_2024_NL.pdf) or [EN](pdf/Interview_YvesRSagaert_WestVlaanderenWerkt_2024_EN.pdf).
+        
+      **International Institue of Forecasters**
+        The IIF is an organisation with forecasting researchers from all around the world who are operating in business or academia. The IIF releases the academic journal International Journal of Forecasting (IJF), as well as a more business-oriented journal Foresight: The International Journal of Applied Forecasting. 
+        
+        I gave an interview as a forecasting member of the IJF, which can be found [online](https://forecasters.org/blog/2019/04/19/member-profile-yves-sagaert/) or in [pdf](pdf/Interview_IIF_YvesRSagaert_2019.pdf).
+        
 
   - title: Experience # Title for the section
     layout: list # Type of content section (list/text)
@@ -91,15 +103,30 @@ content:
     layout: list # Type of content section (list/text)
     content:
       - layout: left
-        title: Harvard University
-        caption: 2010 - 2013
-        sub_title: BSc Computer Science
+        title: Ghent University
+        caption: 2013 - 2017
+        sub_title: Doctor of Philosophy in Industrial Engineering and Operations Research
         quote: >
-          Established in 1636, Harvard is the oldest higher education institution in the United States, and is widely regarded in terms of its influence, reputation, and academic pedigree as a leading university in not just the US but also the world.
+          Improving accuracy and robustness of global tactical sales forecasts in a B2B environment
         description: | # this will include new lines to allow paragraphs
-          During my time at Harvard I learnt most of my key skills that have I have taken through my career such as teamwork and working to tight deadlines. I thouroughly enjoyed my time as university and learnt a lot about a healthy work life balance.
+          I developed a framework to improve sales forecasts by including the most relevant external information, such as weather, promotions and market leading indicators in addition to the historical structure
 
-          I spent a lot of my free time as a committee member of the *Harvard Mountaineering Club* taking on roles such as *Trip Secretary* and *Vice-President*.
+      - layout: left
+        title: Ghent University
+        caption: 2011 - 2013
+        sub_title: Master of Science in Industrial Engineering and Operations Research
+        quote: >
+          Enhancing sales forecasts through the use of adequate exogenous indicators: A case study
+        description: | # this will include new lines to allow paragraphs
+          
+      - layout: left
+        title: Howest University of Applied Sciences
+        caption: 2007 - 2011
+        sub_title: Master of Science in Electrotechnics and Automation
+        quote: >
+          Optimisation of Profibus network at Cargill Izegem
+        description: | # this will include new lines to allow paragraphs
+        
 
   - title: A Little More About Me
     layout: text
@@ -108,7 +135,7 @@ content:
         The IIF is an organisation with forecasting researchers from all around the world who are operating in business or academia. The IIF releases the academic journal International Journal of Forecasting (IJF), as well as a more business-oriented journal Foresight: The International Journal of Applied Forecasting. 
         
         I gave an interview as a forecasting member of the IJF, which can be found [here](https://forecasters.org/blog/2019/04/19/member-profile-yves-sagaert/).
-        ![Trees](/modern-resume-theme/images/landscape-trees.jpg "Trees")
+        ![Trees](/images/landscape-trees.jpg "Trees")
 
 # Footer
 footer_show_references: true
