@@ -1,6 +1,6 @@
 # Site
 repository: sproogen/resume-theme
-favicon: images/favicon.ico
+favicon: images/yvesicon.ico
 
 # Content configuration version
 version: 2
@@ -8,7 +8,7 @@ version: 2
 # Personal info
 name: Yves R. Sagaert
 title: Assistant Professor | VIVES University of Applied Sciences | KU Leuven | IESÉG Management School
-email: yves.r.sagaert [at] gmail.com
+email: yves.sagaert@vives.be
 website: yForecasting.github.io
 
 # Dark Mode (true/false/never)
@@ -54,7 +54,7 @@ about_content: | # this will include new lines to allow paragraphs
 
 
 content:
-  - title: Projects # Title for the section
+  - title: Research interests # Title for the section
     layout: list # Type of content section (list/text)
     content:
       - layout: top-middle
@@ -79,7 +79,7 @@ content:
   - title: In the press
     layout: text
     content: | # this will include new lines to allow paragraphs
-      **Impact with Applied AI research**
+      **KennisWest: Impact with Applied AI research**
       
         I gave an interview on how applied research can help SMEs and what the impact can be on the production floor. The article is available in [NL](pdf/Interview_YvesRSagaert_WestVlaanderenWerkt_2024_NL.pdf) or [EN](pdf/Interview_YvesRSagaert_WestVlaanderenWerkt_2024_EN.pdf).
         
@@ -95,46 +95,47 @@ content:
       - layout: left
         title: VIVES University of Applied Sciences | KU Leuven
         link: https://www.vives.be/nl
-        # link_text: vives.be
+        link_text: vives.be
         sub_title: Assistant Professor
-        caption: 2022 - Present
+        caption: 2020 - Present
         quote: >
           Bringing innovation closer
         description: | # this will include new lines to allow paragraphs
-            Main activities: Applied research on predictive analytics with machine learning \& AI (e.g. sales forecasting, student learning forecasting), project management, mentoring PhD students, research contact with business, obtaining grants, lecturing, bachelor/master thesis supervision
+            I focus on applied research on predictive analytics with machine learning \& AI (e.g. sales forecasting, student learning forecasting). I am leading my research group at VIVES and together we aim to bring innovative predictive AI closer to practice. 
+            Next to this comes project management of internal and external projects, obtaining grants, lecturing, supervising bachelor/master theses and mentoring PhD students. 
             
       - layout: left
         title: IÉSEG School of Management
         link: https://www.ieseg.fr/en/
-        # link_text: ieseg.fr
+        link_text: ieseg.fr
         sub_title: Adjunct Professor
         caption: 2024 - Present
         quote: >
           Teaching the next generation of professionals
         description: | # this will include new lines to allow paragraphs
-            Main activities: Teaching and research collaboration
+            I collaborate on research with a focus on inventory management and supply chain management. Next to my research collaboration, I teach algorithmic thinking and artificial intelligence algorithms using Python. 
       
       - layout: left
         title: Arcelor Mittal
         link: https://belgium.arcelormittal.com/
-        # link_text: arcelormittal.com
+        link_text: belgium.arcelormittal.com
         sub_title: Strategic Innovation Manager for Harbour & Railway
         caption: 2017 - 2020
         quote: >
           
         description: | # this will include new lines to allow paragraphs
-            Main activities: Logistic optimisation, innovation via big data & analytics, track internal innovation projects, create a strategic vision to deploy self-driving trains in the next decade
+            I optimised logistic routing and inventory management and I had a focus on innovation via big data & analytics. I was leading several internal innovation projects and creating a strategic vision to deploy self-driving trains in the next decade.
             
       - layout: left
         title: Solventure
         link: http://www.solventure.eu/
-        # link_text: solventure
+        link_text: solventure.eu
         sub_title: S&OP and Forecasting Research Consultant
         caption: 2013 - 2017
         quote: >
           
         description: | # this will include new lines to allow paragraphs
-            Main activities: Provide executive training, design and teach forecasting courses to professionals in retail and Business-to-Business, start-up of Big Data pillar within the company, research interactions with global supply chain managers, start-up of new R&D team to valorise my PhD research
+            I provide executive training, design and teach forecasting courses to professionals in retail and Business-to-Business. Back in these days, I started up the Big Data pillar within the company. My main focus was on research interactions with global supply chain managers and the start-up of new R&D team to valorise my PhD research.
 
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
