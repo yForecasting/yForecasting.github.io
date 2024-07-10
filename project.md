@@ -10,6 +10,10 @@ A major challenge for SMEs when deploying AI is the limited availability of hist
 
 In this project, we built a Convolutional Neural Network model that predicts a student's pass or fail and exact exam score early in the semester. This allows the system to intervene, inform the lecturer (anonymously) or give the student a helping hand by e-mail.
 
+### Reducing food waste with AI
+
+Together with more than 15 companies, we investigate how to reduce food waste in the food supply chain. Globally, 1/3 of all produced food is thrown away. This share is roughly equaly distributed amongst the stages of harvesting, processing and end consumer. Here, we focus on the processing stage. With catering firms for schools, elderly care, hospitals and other businesses, we improve the demand forecasting and make a prediction on the expected volatility. This enables us to propose an informed decision in the current decision support system. More info can be found [here](https://www.vives.be/nl/onderzoek/smartmealplanning)
+
 
 ### Software packages
 
