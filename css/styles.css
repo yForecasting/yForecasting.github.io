@@ -1094,6 +1094,8 @@ li {
         border-top: 1px solid #e5e5e5;
         padding: 2rem 0;
         gap: 0;
+		z-index: 1500;
+        transform: none;
     }
 
     .nav-menu.active {
