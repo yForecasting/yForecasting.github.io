@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Yves Sagaert</title>
+    <meta name="description" content="Research and personal projects by Yves Sagaert">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">Yves Sagaert</a>
+
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item">
+                    <a href="pages/bio.html" class="nav-link">Bio</a>
+                </li>
+                <li class="nav-item">
+                    <a href="pages/projects.html" class="nav-link">Projects</a>
+                </li>
+                <li class="nav-item">
+                    <a href="pages/press.html" class="nav-link">In the Press</a>
+                </li>
+                <li class="nav-item">
+                    <a href="pages/software.html" class="nav-link">Software</a>
+                </li>
+                <li class="nav-item">
+                    <a href="pages/research.html" class="nav-link">Research</a>
+                </li>
+            </ul>
+
+
+        </div>
+    </nav>
+
+    <main class="page-content">
+        <div class="content-container">
+            <div class="page-header">
+                <h1 class="page-title">Projects</h1>
+            </div>
+
+            <div class="page-body">
+                <div class="projects-content">
+                    <div class="project-item">
+                        <div class="project-year">2025-Present</div>
+                        <div class="project-details">
+                            <h3 class="project-title clickable-title" data-abstract="forecasting-system-project">
+                                AI Demand forecasting for inventory management
+                                <span class="click-hint">(click for details)</span>
+                            </h3>
+                            <div class="abstract-container" id="abstract-forecasting-system-project">
+                                <div class="abstract-content">
+                                    <p><strong>Project Description:</strong> Inventory management literature and software often assume stationary demand, meaning that demand patterns remain stable over time. However, this assumption is unrealistic due to seasonal fluctuations. Traditional forecasting models frequently ignore uncertainty, leading to inefficiencies This project focuses on a predict-then-optimize approach, where demand forecasting is better integrated into inventory management to minimize costs from stockouts or overstock. Additionally, we explore whether a more integrated method, where decisions are directly derived from data, leads to better performance than the traditional approach.</p>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+					
+					<div class="project-item">
+                        <div class="project-year">2025-Present</div>
+                        <div class="project-details">
+                            <h3 class="project-title clickable-title" data-abstract="forecasting-system-project">
+                                Human-AI interaction in predictive systems
+                                <span class="click-hint">(click for details)</span>
+                            </h3>
+                            <div class="abstract-container" id="abstract-forecasting-system-project">
+                                <div class="abstract-content">
+                                    <p><strong>Project Description:</strong> For a good adoption of predictive AI systems in industry, it is essential to leverage the human expert knowledge and to optimize the human-AI interaction. The first goal of this project is to investigate how we can leverage the human expert knowledge to improve the prediction models. The second goal is to focus on the human-AI interaction and to investigate how we can improve the interaction of these experts and other users with these prediction models. To be able to investigate those two goals, we will build a user-friendly platform which will allow to investigate how users interact with different AI models and different kinds of explanations.</p>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <div class="project-year">2023-2025</div>
+                        <div class="project-details">
+                            <h3 class="project-title clickable-title" data-abstract="food-waste-project">
+                                Food waste reduction via AI demand forecasting
+                                <span class="click-hint">(click for details)</span>
+                            </h3>
+                            <div class="abstract-container" id="abstract-food-waste-project">
+                                <div class="abstract-content">
+                                    <p><strong>Project Description:</strong> This project Smart Meal Planning (SMP), brought together school caterers, distributors, and hospitals to the volatility of demand for ready-to-eat meals. The project was partially funded by the Flanders innovation & entrepreneurship (VLAIO) and was a close collaboration between KU Leuven and VIVES University of Applied Sciences.</p>
+                                    <p>This sector presents a unique challenge of asymmetric risk. In standard retail environments, the cost of forecasting overestimation of prepacked cookies merely results in a temporary increase
+									in holding costs. In the context of heated ready-to-eat meals, however,
+									the error term is asymmetric and is immediately penalized. Overforecasting results not in inventory, consumed today is discarded
+									tomorrow. Under-forecasting results in service failure for vulnerable populations.</p>
+                                    <p>The framework developed consistently outperforms current company benchmarks, yielding 6-15% performance improvement over the best-performing reference model and up to 37% when looking back to the last period. Considering that these firms supply hundreds of schools, each serving hundreds of children, this practice results in a substantial reduction in the volume of meals being discarded as food waste.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <div class="project-year">2021-2024</div>
+                        <div class="project-details">
+                            <h3 class="project-title clickable-title" data-abstract="sales-forecasting-project">
+                                Sales forecasting with AI for SMEs with limited historical data
+                                <span class="click-hint">(click for details)</span>
+                            </h3>
+                            <div class="abstract-container" id="abstract-sales-forecasting-project">
+                                <div class="abstract-content">
+                                    <p><strong>Project Description:</strong> An estimate of future demand is a crucial input for operations planning. Keeping inventory is essential to deliver customers, but it can lock-in a substantial amount of capital. Making a tradeoff between service level and capital investment can rely on demand forecasting as input. </p>
+                                    <p>Having limited historical data is a problem because most AI models are data-hungry. As SMEs typically don’t hold a lot of data, and the number of products is often limited, this makes it difficult to learn past consumer behaviour and extrapolate it in the future. In this project, we deploy AI-techniques for the sparse datasets. In a company case study, the AI demand forecast provides 24.2% improvement over state-of-the-art models on RMSSE and 39.3% improvement over the company benchmark. This resulted in an open-source software DeepRetail, which is free to download.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <div class="project-year">2020-2023</div>
+                        <div class="project-details">
+                            <h3 class="project-title clickable-title" data-abstract="ai-education-project">
+                                Learning Analytics and predicting students at risk
+                                <span class="click-hint">(click for details)</span>
+                            </h3>
+                            <div class="abstract-container" id="abstract-ai-education-project">
+                                <div class="abstract-content">
+                                    <p><strong>Project Description:</strong> The use of digital tools for learning has increased exponentially in recent decades. Learning Management Systems (LMS) such as Blackboard or Moodle are established software applications that, in addition to other administrative tasks, facilitate the delivery of online educational resources (e.g. documents, screencasts, or quizzes) and user interaction (e.g. online forums). </p> 
+									<p>In this project, we investigated whether we can predict the student exam performance based on all registered student actions (the digital footprint) on the online learning platform. The students were then prompted via email 6 weeks after the start of the semester to suggest the top three actions they can take to improve their exam result for this course. 
+									</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/main.js"></script>
+</body>
+
+</html>
