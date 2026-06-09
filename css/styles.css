@@ -571,6 +571,31 @@ li {
     font-weight: bold;
 }
 
+
+/* NESTED list */
+
+.toolbox-list li::before {
+    content: none;
+}
+
+/* then define your own */
+.toolbox-list li {
+    position: relative;
+    padding-left: 1rem;              /* slightly less indent */
+    margin-bottom: 0.25rem;          /* tighter spacing */
+}
+
+.toolbox-list li::after {
+    content: "●";                    /* filled circle */
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.55rem;              /* smaller */
+    position: absolute;
+    left: 0.2rem;                    /* shift slightly right */
+    top: 0.5em;
+}
+
+
+
 .service-section,
 .awards-section {
     margin-top: 2rem;
