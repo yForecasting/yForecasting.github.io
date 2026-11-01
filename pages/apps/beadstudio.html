@@ -1,0 +1,2076 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aquabeads Studio & Template Generator</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons for robust rendering -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Cropper.js for visual manual image cropping -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <!-- jsPDF for 1:1 scale printable templates -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    body {
+      font-family: 'Nunito', sans-serif;
+    }
+    .font-brand {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Print styles for direct 1:1 printing */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #print-sheet, #print-sheet * {
+        visibility: visible !important;
+      }
+      #print-sheet {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+    }
+
+    .canvas-bg {
+      background-color: #f8fafc;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 18px 18px;
+    }
+
+    .dotted-leader {
+      border-bottom: 2px dotted #94a3b8;
+      flex-grow: 1;
+      margin: 0 8px;
+      height: 10px;
+    }
+
+    /* Custom cropper styling */
+    .cropper-view-box,
+    .cropper-face {
+      border-radius: 8px;
+    }
+    .cropper-line, .cropper-point {
+      background-color: #ec4899;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between shadow-xs z-30 flex-wrap gap-2">
+    
+    <!-- Logo & Title -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-400 to-amber-300 flex items-center justify-center text-white shadow-sm font-brand font-bold text-xl">
+        ✦
+      </div>
+      <div>
+        <h1 class="font-brand font-bold text-lg text-slate-800 leading-tight">Aquabeads Studio</h1>
+        <p class="text-[11px] text-slate-500 font-semibold" data-i18n="appSubtitle">Patroon Generator & 1:1 Printbare Sjablonen</p>
+      </div>
+    </div>
+
+    <!-- Center/Right Action Toolbar -->
+    <div class="flex items-center gap-2 flex-wrap">
+      
+      <!-- Upload image button -->
+      <label class="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 text-pink-600 hover:bg-pink-100 border border-pink-200 rounded-lg text-xs font-bold transition">
+        <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+        <span data-i18n="uploadImage">Afbeelding Inladen</span>
+        <input type="file" id="image-upload" accept="image/*" class="hidden">
+      </label>
+
+      <!-- Recrop button (visible after image loaded) -->
+      <button id="btn-open-crop" class="hidden flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-xs font-bold transition">
+        <i class="fa-solid fa-crop text-sm"></i>
+        <span data-i18n="adjustCrop">Bijsnijden</span>
+      </button>
+
+      <!-- Load Sample (No "Pompoen" label) -->
+      <button id="btn-load-sample" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition" title="Laad voorbeeld">
+        <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-sm"></i>
+        <span data-i18n="loadSample">Voorbeeld</span>
+      </button>
+
+      <!-- Undo / Redo -->
+      <div class="flex items-center bg-slate-100 rounded-lg border border-slate-200 p-0.5">
+        <button id="btn-undo" class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-white rounded disabled:opacity-30 disabled:hover:bg-transparent" title="Ongedaan maken">
+          <i class="fa-solid fa-rotate-left text-sm"></i>
+        </button>
+        <button id="btn-redo" class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-white rounded disabled:opacity-30 disabled:hover:bg-transparent" title="Opnieuw">
+          <i class="fa-solid fa-rotate-right text-sm"></i>
+        </button>
+      </div>
+
+      <div class="h-5 w-px bg-slate-300 mx-1"></div>
+
+      <!-- Print (1:1 Direct Print) -->
+      <button id="btn-print" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold shadow-xs transition">
+        <i class="fa-solid fa-print text-sm"></i>
+        <span data-i18n="printDirect">Afdrukken</span>
+      </button>
+
+      <!-- PDF Download -->
+      <button id="btn-export-pdf" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs transition">
+        <i class="fa-solid fa-file-pdf text-sm"></i>
+        <span data-i18n="savePdf">PDF Opslaan</span>
+      </button>
+
+      <!-- PNG Download -->
+      <button id="btn-export-png" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-xs transition">
+        <i class="fa-solid fa-file-image text-sm"></i>
+        <span>PNG</span>
+      </button>
+
+      <div class="h-5 w-px bg-slate-300 mx-1"></div>
+
+      <!-- Language Selector -->
+      <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-xs">
+        <i class="fa-solid fa-globe text-slate-500"></i>
+        <select id="lang-select" class="bg-transparent font-bold text-slate-700 focus:outline-none cursor-pointer">
+          <option value="nl" selected>NL (Nederlands)</option>
+          <option value="en">EN (English)</option>
+          <option value="fr">FR (Français)</option>
+          <option value="es">ES (Español)</option>
+          <option value="it">IT (Italiano)</option>
+          <option value="de">DE (Deutsch)</option>
+        </select>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Work Area -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- Left Sidebar: Tools, Clear at top, Palettes, Grid -->
+    <aside class="w-80 bg-white border-r border-slate-200 flex flex-col justify-between overflow-y-auto shadow-xs z-10">
+      <div class="p-4 space-y-4">
+
+        <!-- 1. "CLEAR ALL" BUTTON AT TOP -->
+        <div class="bg-rose-50 border border-rose-200 rounded-xl p-2.5">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-rose-700" data-i18n="canvasActions">Canvas Acties</span>
+            <span class="text-[10px] text-rose-500 font-semibold" data-i18n="resetWarn">Nieuw canvas</span>
+          </div>
+          <button id="btn-clear-grid" class="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.99] rounded-lg shadow-xs transition">
+            <i class="fa-solid fa-trash-can text-sm"></i>
+            <span data-i18n="clearAll">Alles Wissen</span>
+          </button>
+        </div>
+
+        <!-- 2. TOOLS -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" data-i18n="toolsTitle">Gereedschap</label>
+          <div class="grid grid-cols-4 gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button data-tool="pencil" class="tool-btn active flex flex-col items-center justify-center p-2 rounded-lg text-xs font-bold bg-white text-pink-600 shadow-xs transition">
+              <i class="fa-solid fa-pen text-sm mb-1"></i>
+              <span data-i18n="toolDraw">Teken</span>
+            </button>
+            <button data-tool="eraser" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-white/60 transition">
+              <i class="fa-solid fa-eraser text-sm mb-1"></i>
+              <span data-i18n="toolErase">Wis</span>
+            </button>
+            <button data-tool="fill" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-white/60 transition">
+              <i class="fa-solid fa-fill-drip text-sm mb-1"></i>
+              <span data-i18n="toolFill">Vul</span>
+            </button>
+            <button data-tool="eyedropper" class="tool-btn flex flex-col items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-white/60 transition">
+              <i class="fa-solid fa-eye-dropper text-sm mb-1"></i>
+              <span data-i18n="toolPicker">Prikker</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. BEAD TYPE SELECTOR (ROUND, JEWEL, STAR) -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" data-i18n="beadTypeTitle">Kraaltype</label>
+          <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            
+            <!-- Round -->
+            <button id="type-round" class="bead-type-btn active flex flex-col items-center justify-center py-2 px-1 rounded-lg text-xs font-bold bg-white text-slate-800 shadow-xs transition">
+              <span class="w-4 h-4 rounded-full bg-gradient-to-tr from-amber-600 to-amber-300 border border-amber-700 shadow-xs mb-1"></span>
+              <span data-i18n="typeRound">Rond</span>
+            </button>
+            
+            <!-- Jewel (Faceted) -->
+            <button id="type-jewel" class="bead-type-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg text-xs font-bold text-slate-600 hover:bg-white/60 transition">
+              <svg class="w-4 h-4 text-amber-500 mb-1" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke="#b45309" stroke-width="2" fill="#f59e0b" />
+              </svg>
+              <span data-i18n="typeJewel">Juweel</span>
+            </button>
+
+            <!-- Star (Ster) -->
+            <button id="type-star" class="bead-type-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg text-xs font-bold text-slate-600 hover:bg-white/60 transition">
+              <svg class="w-4 h-4 text-amber-400 mb-1" viewBox="0 0 24 24">
+                <polygon points="12,1 15,8 23,9 17,14 19,22 12,18 5,22 7,14 1,9 9,8" fill="#fbbf24" stroke="#d97706" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+              <span data-i18n="typeStar">Ster</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. COLOR PALETTE PICKER -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="paletteTitle">Kleurenpalet</label>
+            <span id="active-color-name" class="text-xs font-bold text-pink-600">Oranje</span>
+          </div>
+          <!-- Swatches grid container -->
+          <div id="palette-grid" class="grid grid-cols-5 gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl max-h-48 overflow-y-auto">
+            <!-- Rendered by renderPalette() -->
+          </div>
+        </div>
+
+        <!-- 5. GRID SIZE & SPECS (22 COLS x 26 ROWS DEFAULT) -->
+        <div class="pt-3 border-t border-slate-200">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="gridDimensions">Rastergrootte</label>
+            <span class="text-[10px] bg-pink-100 text-pink-700 font-bold px-1.5 py-0.5 rounded">22 × 26 Tray</span>
+          </div>
+          
+          <div class="space-y-3 text-xs font-medium text-slate-600">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span data-i18n="colsLabel">Kolommen (Even rijen):</span>
+                <span id="grid-cols-label" class="font-bold text-slate-800">22</span>
+              </div>
+              <input type="range" id="input-grid-cols" min="14" max="32" value="22" class="w-full accent-pink-500">
+              <p class="text-[10px] text-slate-400" data-i18n="colsHelp">Oneven rijen hebben 1 kraaltje minder voor een verspringend patroon.</p>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span data-i18n="rowsLabel">Rijen:</span>
+                <span id="grid-rows-label" class="font-bold text-slate-800">26</span>
+              </div>
+              <input type="range" id="input-grid-rows" min="16" max="36" value="26" class="w-full accent-pink-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. IMAGE CONVERSION SENSITIVITY CONTROLS -->
+        <div id="image-controls" class="pt-3 border-t border-slate-200 hidden">
+          <label class="block text-xs font-bold uppercase tracking-wider text-pink-600 mb-2" data-i18n="imgSettingsTitle">Beeldverwerking</label>
+          <div class="space-y-3 text-xs font-medium text-slate-600">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span data-i18n="bgThreshold">Achtergrond wit drempel:</span>
+                <span id="bg-val" class="font-bold">245</span>
+              </div>
+              <input type="range" id="input-bg-thresh" min="150" max="255" value="245" class="w-full accent-pink-500">
+            </div>
+            <button id="btn-reprocess" class="w-full py-1.5 bg-pink-500 hover:bg-pink-600 text-white rounded-lg font-bold transition text-xs flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-arrows-rotate text-xs"></i>
+              <span data-i18n="reprocessBtn">Opnieuw Rasteriseren</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Options: Toggle Grid Dots -->
+      <div class="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+        <label class="flex items-center gap-2 cursor-pointer text-slate-600 font-semibold">
+          <input type="checkbox" id="check-show-grid" checked class="rounded text-pink-600 focus:ring-pink-500">
+          <span data-i18n="showPegSockets">Toon lege pinnetjes</span>
+        </label>
+        <span class="text-[10px] text-slate-400 font-mono">1:1 Schaal: 5.0mm</span>
+      </div>
+    </aside>
+
+    <!-- Center Canvas Workspace -->
+    <main class="flex-1 canvas-bg flex items-center justify-center p-6 overflow-auto relative">
+      
+      <!-- The Printable Document Board / Sheet -->
+      <div id="print-sheet" class="bg-white rounded-2xl shadow-xl border border-slate-300 p-8 flex flex-row items-center gap-10 transition-transform">
+        
+        <!-- Left: Aquabeads Template Frame (Matching pink border & corner registration circles) -->
+        <div class="relative flex flex-col items-center">
+          <div id="tray-outer-frame" class="relative bg-white border-[6px] border-[#ff4099] rounded-2xl shadow-inner p-4 flex items-center justify-center">
+            
+            <!-- Top-Left Registration Circle (5mm standard alignment hole for physical tray) -->
+            <div class="absolute top-3.5 left-3.5 w-6 h-6 rounded-full border-2 border-slate-700 bg-white shadow-xs pointer-events-none flex items-center justify-center">
+              <div class="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+            </div>
+
+            <!-- Bottom-Right Registration Circle -->
+            <div class="absolute bottom-3.5 right-3.5 w-6 h-6 rounded-full border-2 border-slate-700 bg-white shadow-xs pointer-events-none flex items-center justify-center">
+              <div class="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+            </div>
+
+            <!-- Staggered Bead Canvas -->
+            <canvas id="bead-canvas" class="cursor-crosshair block rounded-lg"></canvas>
+          </div>
+          <span class="text-[11px] text-slate-400 font-bold tracking-wide uppercase mt-2.5" data-i18n="trayFitFooter">1:1 Schaal Pasvorm voor Transparante Legplank</span>
+        </div>
+
+        <!-- Right: Bead Legend & Tally Counter -->
+        <div class="w-64 flex flex-col justify-start self-start pt-4 border-l border-slate-100 pl-6">
+          <h3 class="font-brand font-bold text-slate-700 text-sm tracking-wide uppercase mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-pink-500 text-sm"></i>
+            <span data-i18n="tallyHeading">KRAALTJES OVERZICHT</span>
+          </h3>
+
+          <div id="tally-container" class="space-y-3 text-sm font-mono-num text-slate-700 select-text max-h-[460px] overflow-y-auto pr-1">
+            <!-- Dynamic tally list -->
+          </div>
+
+          <div id="tally-empty" class="text-xs text-slate-400 italic py-4 hidden" data-i18n="tallyEmpty">
+            Nog geen kraaltjes geplaatst. Upload een afbeelding of teken met de pen!
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-200 text-xs font-bold text-slate-600 flex justify-between items-center">
+            <span data-i18n="totalBeads">Totaal kralen:</span>
+            <span id="total-beads-count" class="font-bold text-pink-600 text-base font-mono-num">36</span>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- CROP MODAL DIALOG -->
+  <div id="crop-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center">
+            <i class="fa-solid fa-crop-simple text-sm"></i>
+          </div>
+          <div>
+            <h3 class="font-brand font-bold text-base text-slate-800" data-i18n="cropModalTitle">Afbeelding Handmatig Bijsnijden</h3>
+            <p class="text-xs text-slate-500" data-i18n="cropModalSub">Selecteer het gewenste deel voor je Aquabeads sjabloon</p>
+          </div>
+        </div>
+        <button id="btn-close-crop" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Cropper Viewport) -->
+      <div class="p-4 bg-slate-950 flex-1 flex items-center justify-center min-h-[350px] max-h-[500px] overflow-hidden">
+        <div class="w-full h-full flex items-center justify-center">
+          <img id="cropper-image" class="max-w-full max-h-[480px] object-contain" src="" alt="Crop target">
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <button id="btn-crop-aspect-free" class="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100" data-i18n="aspectFree">Vrij</button>
+          <button id="btn-crop-aspect-square" class="px-2.5 py-1 text-xs font-semibold bg-pink-50 border border-pink-300 text-pink-700 rounded-lg hover:bg-pink-100" data-i18n="aspectSquare">Vierkant (Tray)</button>
+          <button id="btn-crop-rotate" class="p-1.5 text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100" title="Draaien 90°">
+            <i class="fa-solid fa-rotate-right text-xs"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-cancel-crop" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-lg transition" data-i18n="btnCancel">Annuleren</button>
+          <button id="btn-apply-crop" class="px-4 py-2 text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 rounded-lg shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span data-i18n="btnApplyCrop">Toepassen & Rasteriseren</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Offscreen Canvas for pixel sampling -->
+  <canvas id="offscreen-canvas" class="hidden"></canvas>
+
+  <script>
+    // --- 1. MULTILINGUAL DICTIONARY (NL, EN, FR, ES, IT, DE) ---
+    const TRANSLATIONS = {
+      nl: {
+        appSubtitle: "Patroon Generator & 1:1 Printbare Sjablonen",
+        uploadImage: "Afbeelding Inladen",
+        adjustCrop: "Bijsnijden",
+        loadSample: "Voorbeeld",
+        printDirect: "Afdrukken",
+        savePdf: "PDF Opslaan",
+        canvasActions: "Canvas Acties",
+        resetWarn: "Nieuw canvas",
+        clearAll: "Alles Wissen",
+        toolsTitle: "Gereedschap",
+        toolDraw: "Teken",
+        toolErase: "Wis",
+        toolFill: "Vul",
+        toolPicker: "Prikker",
+        beadTypeTitle: "Kraaltype",
+        typeRound: "Rond",
+        typeJewel: "Juweel",
+        typeStar: "Ster",
+        paletteTitle: "Kleurenpalet",
+        gridDimensions: "Rastergrootte",
+        colsLabel: "Kolommen (Even rijen):",
+        colsHelp: "Oneven rijen hebben 1 kraaltje minder voor een verspringend patroon.",
+        rowsLabel: "Rijen:",
+        imgSettingsTitle: "Beeldverwerking",
+        bgThreshold: "Achtergrond wit drempel:",
+        reprocessBtn: "Opnieuw Rasteriseren",
+        showPegSockets: "Toon lege pinnetjes",
+        trayFitFooter: "1:1 Schaal Pasvorm voor Transparante Legplank",
+        tallyHeading: "KRAALTJES OVERZICHT",
+        tallyEmpty: "Nog geen kraaltjes geplaatst. Upload een afbeelding of teken met de pen!",
+        totalBeads: "Totaal kralen:",
+        cropModalTitle: "Afbeelding Handmatig Bijsnijden",
+        cropModalSub: "Selecteer het gewenste deel voor je Aquabeads sjabloon",
+        aspectFree: "Vrij",
+        aspectSquare: "Vierkant (Tray)",
+        btnCancel: "Annuleren",
+        btnApplyCrop: "Toepassen & Rasteriseren",
+        confirmClear: "Weet je zeker dat je het hele canvas wilt wissen?",
+        pdfError: "Er is een fout opgetreden bij het maken van de PDF. Probeer 'Afdrukken' als alternatief.",
+        colorBlack: "Zwart",
+        colorWhite: "Wit",
+        colorGrey: "Grijs",
+        colorOrange: "Oranje",
+        colorDarkOrange: "Donker Oranje",
+        colorRed: "Rood",
+        colorHoney: "Honing",
+        colorCaramel: "Karamel",
+        colorBrown: "Bruin",
+        colorYellow: "Geel",
+        colorPastelYellow: "Pastelgeel",
+        colorGreen: "Groen",
+        colorLime: "Limoen",
+        colorLightBlue: "Lichtblauw",
+        colorBlue: "Blauw",
+        colorRoyalBlue: "Koningsblauw",
+        colorPurple: "Paars",
+        colorPink: "Roze",
+        colorLightPink: "Lichtroze",
+        colorPeach: "Perzik",
+        colorIvory: "Ivoor"
+      },
+      en: {
+        appSubtitle: "Template Generator & 1:1 Printable Patterns",
+        uploadImage: "Upload Image",
+        adjustCrop: "Crop Image",
+        loadSample: "Sample",
+        printDirect: "Print",
+        savePdf: "Save PDF",
+        canvasActions: "Canvas Actions",
+        resetWarn: "Fresh canvas",
+        clearAll: "Clear All",
+        toolsTitle: "Tools",
+        toolDraw: "Draw",
+        toolErase: "Erase",
+        toolFill: "Fill",
+        toolPicker: "Eyedropper",
+        beadTypeTitle: "Bead Type",
+        typeRound: "Round",
+        typeJewel: "Jewel",
+        typeStar: "Star",
+        paletteTitle: "Color Palette",
+        gridDimensions: "Grid Dimensions",
+        colsLabel: "Columns (Even rows):",
+        colsHelp: "Odd rows have 1 less bead for a true staggered hexagonal layout.",
+        rowsLabel: "Rows:",
+        imgSettingsTitle: "Image Processing",
+        bgThreshold: "Background white threshold:",
+        reprocessBtn: "Reprocess Image",
+        showPegSockets: "Show empty peg sockets",
+        trayFitFooter: "1:1 Scale Fit for Transparent Pegboard Tray",
+        tallyHeading: "BEAD OVERVIEW",
+        tallyEmpty: "No beads placed yet. Upload an image or draw directly with the pencil!",
+        totalBeads: "Total beads:",
+        cropModalTitle: "Crop Image Manually",
+        cropModalSub: "Select the portion you want to convert into Aquabeads",
+        aspectFree: "Free",
+        aspectSquare: "Square (Tray)",
+        btnCancel: "Cancel",
+        btnApplyCrop: "Apply & Rasterize",
+        confirmClear: "Are you sure you want to clear the entire canvas?",
+        pdfError: "An error occurred while creating the PDF. Please try 'Print' instead.",
+        colorBlack: "Black",
+        colorWhite: "White",
+        colorGrey: "Grey",
+        colorOrange: "Orange",
+        colorDarkOrange: "Dark Orange",
+        colorRed: "Red",
+        colorHoney: "Honey",
+        colorCaramel: "Caramel",
+        colorBrown: "Brown",
+        colorYellow: "Yellow",
+        colorPastelYellow: "Pastel Yellow",
+        colorGreen: "Green",
+        colorLime: "Lime",
+        colorLightBlue: "Light Blue",
+        colorBlue: "Blue",
+        colorRoyalBlue: "Royal Blue",
+        colorPurple: "Purple",
+        colorPink: "Pink",
+        colorLightPink: "Light Pink",
+        colorPeach: "Peach",
+        colorIvory: "Ivory"
+      },
+      fr: {
+        appSubtitle: "Générateur de Modèles & Gabarits Imprimables 1:1",
+        uploadImage: "Importer Image",
+        adjustCrop: "Recadrer",
+        loadSample: "Exemple",
+        printDirect: "Imprimer",
+        savePdf: "Enregistrer PDF",
+        canvasActions: "Actions Canvas",
+        resetWarn: "Nouveau canevas",
+        clearAll: "Tout Effacer",
+        toolsTitle: "Outils",
+        toolDraw: "Dessiner",
+        toolErase: "Gomme",
+        toolFill: "Remplir",
+        toolPicker: "Pipette",
+        beadTypeTitle: "Type de Perle",
+        typeRound: "Ronde",
+        typeJewel: "Bijou",
+        typeStar: "Étoile",
+        paletteTitle: "Palette de Couleurs",
+        gridDimensions: "Dimensions de la Grille",
+        colsLabel: "Colonnes (Lignes paires):",
+        colsHelp: "Les lignes impaires ont 1 perle de moins pour un quinconce fidèle.",
+        rowsLabel: "Lignes:",
+        imgSettingsTitle: "Traitement d'Image",
+        bgThreshold: "Seuil de fond blanc:",
+        reprocessBtn: "Retraiter l'Image",
+        showPegSockets: "Afficher les picots vides",
+        trayFitFooter: "Échelle 1:1 pour Plateau Transparent",
+        tallyHeading: "RÉCAPITULATIF DES PERLES",
+        tallyEmpty: "Aucune perle posée. Importez une image ou dessinez au crayon !",
+        totalBeads: "Total des perles :",
+        cropModalTitle: "Recadrer Manuellement",
+        cropModalSub: "Sélectionnez la zone à convertir en perles Aquabeads",
+        aspectFree: "Libre",
+        aspectSquare: "Carré",
+        btnCancel: "Annuler",
+        btnApplyCrop: "Appliquer & Générer",
+        confirmClear: "Voulez-vous vraiment effacer tout le canevas ?",
+        pdfError: "Une erreur est survenue lors de la création du PDF. Utilisez 'Imprimer'.",
+        colorBlack: "Noir",
+        colorWhite: "Blanc",
+        colorGrey: "Gris",
+        colorOrange: "Orange",
+        colorDarkOrange: "Orange Foncé",
+        colorRed: "Rouge",
+        colorHoney: "Miel",
+        colorCaramel: "Caramel",
+        colorBrown: "Marron",
+        colorYellow: "Jaune",
+        colorPastelYellow: "Jaune Pastel",
+        colorGreen: "Vert",
+        colorLime: "Citron Vert",
+        colorLightBlue: "Bleu Clair",
+        colorBlue: "Bleu",
+        colorRoyalBlue: "Bleu Roi",
+        colorPurple: "Violet",
+        colorPink: "Rose",
+        colorLightPink: "Rose Clair",
+        colorPeach: "Pêche",
+        colorIvory: "Ivoire"
+      },
+      es: {
+        appSubtitle: "Generador de Plantillas & Patrones Imprimibles 1:1",
+        uploadImage: "Subir Imagen",
+        adjustCrop: "Recortar",
+        loadSample: "Ejemplo",
+        printDirect: "Imprimir",
+        savePdf: "Guardar PDF",
+        canvasActions: "Acciones",
+        resetWarn: "Lienzo nuevo",
+        clearAll: "Borrar Todo",
+        toolsTitle: "Herramientas",
+        toolDraw: "Dibujar",
+        toolErase: "Borrar",
+        toolFill: "Rellenar",
+        toolPicker: "Cuentagotas",
+        beadTypeTitle: "Tipo de Cuenta",
+        typeRound: "Redonda",
+        typeJewel: "Joya",
+        typeStar: "Estrella",
+        paletteTitle: "Paleta de Colores",
+        gridDimensions: "Dimensiones de Cuadrícula",
+        colsLabel: "Columnas (Filas pares):",
+        colsHelp: "Las filas impares tienen 1 cuenta menos para encaje hexagonal.",
+        rowsLabel: "Filas:",
+        imgSettingsTitle: "Ajuste de Imagen",
+        bgThreshold: "Umbral blanco de fondo:",
+        reprocessBtn: "Reprocesar Imagen",
+        showPegSockets: "Mostrar clavijas vacías",
+        trayFitFooter: "Ajuste 1:1 para Bandeja Transparente",
+        tallyHeading: "RESUMEN DE CUENTAS",
+        tallyEmpty: "No hay cuentas todavía. ¡Sube una imagen o dibuja libremente!",
+        totalBeads: "Total de cuentas:",
+        cropModalTitle: "Recorte Manual de Imagen",
+        cropModalSub: "Selecciona el área deseada para tu diseño Aquabeads",
+        aspectFree: "Libre",
+        aspectSquare: "Cuadrado",
+        btnCancel: "Cancelar",
+        btnApplyCrop: "Aplicar & Cuadricular",
+        confirmClear: "¿Seguro que quieres borrar todo el lienzo?",
+        pdfError: "Error al generar el PDF. Prueba con la opción 'Imprimir'.",
+        colorBlack: "Negro",
+        colorWhite: "Blanco",
+        colorGrey: "Gris",
+        colorOrange: "Naranja",
+        colorDarkOrange: "Naranja Oscuro",
+        colorRed: "Rojo",
+        colorHoney: "Miel",
+        colorCaramel: "Caramelo",
+        colorBrown: "Marrón",
+        colorYellow: "Amarillo",
+        colorPastelYellow: "Amarillo Pastel",
+        colorGreen: "Verde",
+        colorLime: "Lima",
+        colorLightBlue: "Azul Claro",
+        colorBlue: "Azul",
+        colorRoyalBlue: "Azul Real",
+        colorPurple: "Morado",
+        colorPink: "Rosa",
+        colorLightPink: "Rosa Claro",
+        colorPeach: "Melocotón",
+        colorIvory: "Marfil"
+      },
+      it: {
+        appSubtitle: "Generatore di Modelli & Schemi Stampabili 1:1",
+        uploadImage: "Carica Immagine",
+        adjustCrop: "Ritaglia",
+        loadSample: "Esempio",
+        printDirect: "Stampa",
+        savePdf: "Salva PDF",
+        canvasActions: "Azioni Tela",
+        resetWarn: "Nuova tela",
+        clearAll: "Cancella Tutto",
+        toolsTitle: "Strumenti",
+        toolDraw: "Disegna",
+        toolErase: "Gomma",
+        toolFill: "Riempi",
+        toolPicker: "Contagocce",
+        beadTypeTitle: "Tipo di Perlina",
+        typeRound: "Tonda",
+        typeJewel: "Gemma",
+        typeStar: "Stella",
+        paletteTitle: "Tavolozza Colori",
+        gridDimensions: "Dimensioni Griglia",
+        colsLabel: "Colonne (Righe pari):",
+        colsHelp: "Le righe dispari hanno 1 perlina in meno per una griglia sfalsata.",
+        rowsLabel: "Righe:",
+        imgSettingsTitle: "Elaborazione Immagine",
+        bgThreshold: "Soglia bianco di sfondo:",
+        reprocessBtn: "Rielabora Immagine",
+        showPegSockets: "Mostra alloggiamenti vuoti",
+        trayFitFooter: "Scala 1:1 per Vassoio Trasparente",
+        tallyHeading: "CONTEGGIO PERLINE",
+        tallyEmpty: "Nessuna perlina posizionata. Carica una foto o disegna con la penna!",
+        totalBeads: "Totale perline:",
+        cropModalTitle: "Ritaglio Manuale",
+        cropModalSub: "Seleziona la porzione da trasformare in perline Aquabeads",
+        aspectFree: "Libero",
+        aspectSquare: "Quadrato",
+        btnCancel: "Annulla",
+        btnApplyCrop: "Applica & Elabora",
+        confirmClear: "Sei sicuro di voler cancellare l'intera tavola?",
+        pdfError: "Si è verificato un errore nella creazione del PDF. Usa 'Stampa'.",
+        colorBlack: "Nero",
+        colorWhite: "Bianco",
+        colorGrey: "Grigio",
+        colorOrange: "Arancione",
+        colorDarkOrange: "Arancio Scuro",
+        colorRed: "Rosso",
+        colorHoney: "Miele",
+        colorCaramel: "Caramello",
+        colorBrown: "Marrone",
+        colorYellow: "Giallo",
+        colorPastelYellow: "Giallo Pastello",
+        colorGreen: "Verde",
+        colorLime: "Lime",
+        colorLightBlue: "Azzurro",
+        colorBlue: "Blu",
+        colorRoyalBlue: "Blu Reale",
+        colorPurple: "Viola",
+        colorPink: "Rosa",
+        colorLightPink: "Rosa Chiaro",
+        colorPeach: "Pesca",
+        colorIvory: "Avorio"
+      },
+      de: {
+        appSubtitle: "Vorlagen-Generator & 1:1 Druckbare Schablonen",
+        uploadImage: "Bild Hochladen",
+        adjustCrop: "Zuschneiden",
+        loadSample: "Beispiel",
+        printDirect: "Drucken",
+        savePdf: "PDF Speichern",
+        canvasActions: "Leinwand-Aktionen",
+        resetWarn: "Neue Leinwand",
+        clearAll: "Alles Löschen",
+        toolsTitle: "Werkzeuge",
+        toolDraw: "Zeichnen",
+        toolErase: "Radieren",
+        toolFill: "Füllen",
+        toolPicker: "Pipette",
+        beadTypeTitle: "Perlenart",
+        typeRound: "Rund",
+        typeJewel: "Juwel",
+        typeStar: "Stern",
+        paletteTitle: "Farbpalette",
+        gridDimensions: "Rastergröße",
+        colsLabel: "Spalten (Gerade Zeilen):",
+        colsHelp: "Ungerade Zeilen haben 1 Perle weniger für echtes Wabenmuster.",
+        rowsLabel: "Zeilen:",
+        imgSettingsTitle: "Bildverarbeitung",
+        bgThreshold: "Hintergrund-Weiß-Schwelle:",
+        reprocessBtn: "Bild Neu Berechnen",
+        showPegSockets: "Leere Steckplätze anzeigen",
+        trayFitFooter: "1:1 Maßstab für Transparente Steckplatte",
+        tallyHeading: "PERLENÜBERSICHT",
+        tallyEmpty: "Noch keine Perlen gesetzt. Bild hochladen oder mit dem Stift malen!",
+        totalBeads: "Gesamtperlen:",
+        cropModalTitle: "Bild Manuell Zuschneiden",
+        cropModalSub: "Wähle den Bildausschnitt für deine Aquabeads Schablone",
+        aspectFree: "Frei",
+        aspectSquare: "Quadratisch",
+        btnCancel: "Abbrechen",
+        btnApplyCrop: "Anwenden & Rastern",
+        confirmClear: "Möchtest du wirklich die gesamte Vorlage löschen?",
+        pdfError: "Fehler beim Erstellen der PDF. Bitte nutze stattdessen 'Drucken'.",
+        colorBlack: "Schwarz",
+        colorWhite: "Weiß",
+        colorGrey: "Grau",
+        colorOrange: "Orange",
+        colorDarkOrange: "Dunkelorange",
+        colorRed: "Rot",
+        colorHoney: "Honig",
+        colorCaramel: "Karamell",
+        colorBrown: "Braun",
+        colorYellow: "Gelb",
+        colorPastelYellow: "Pastellgelb",
+        colorGreen: "Grün",
+        colorLime: "Limette",
+        colorLightBlue: "Hellblau",
+        colorBlue: "Blau",
+        colorRoyalBlue: "Königsblau",
+        colorPurple: "Lila",
+        colorPink: "Rosa",
+        colorLightPink: "Hellrosa",
+        colorPeach: "Pfirsich",
+        colorIvory: "Elfenbein"
+      }
+    };
+
+    let currentLang = 'nl';
+    function setLanguage(lang) {
+      if (!TRANSLATIONS[lang]) return;
+      currentLang = lang;
+      const dict = TRANSLATIONS[lang];
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.textContent = dict[key];
+        }
+      });
+
+      const langSelect = document.getElementById('lang-select');
+      if (langSelect && langSelect.value !== lang) {
+        langSelect.value = lang;
+      }
+
+      renderPalette();
+      updateTallyCounter();
+    }
+
+    // --- 2. COMPLETE OFFICIAL AQUABEADS PALETTE (21 COLORS) ---
+    const AQUABEADS_PALETTE = [
+      { id: 'orange', hex: '#ff8800', i18nKey: 'colorOrange' },
+      { id: 'dark_orange', hex: '#d9530f', i18nKey: 'colorDarkOrange' },
+      { id: 'honey', hex: '#ca7a20', i18nKey: 'colorHoney' },
+      { id: 'caramel', hex: '#945320', i18nKey: 'colorCaramel' },
+      { id: 'black', hex: '#262626', i18nKey: 'colorBlack' },
+      { id: 'white', hex: '#f8fafc', i18nKey: 'colorWhite' },
+      { id: 'grey', hex: '#94a3b8', i18nKey: 'colorGrey' },
+      { id: 'red', hex: '#d6001c', i18nKey: 'colorRed' },
+      { id: 'brown', hex: '#633719', i18nKey: 'colorBrown' },
+      { id: 'yellow', hex: '#ffcc00', i18nKey: 'colorYellow' },
+      { id: 'pastel_yellow', hex: '#fef08a', i18nKey: 'colorPastelYellow' },
+      { id: 'green', hex: '#22c55e', i18nKey: 'colorGreen' },
+      { id: 'lime', hex: '#84cc16', i18nKey: 'colorLime' },
+      { id: 'light_blue', hex: '#38bdf8', i18nKey: 'colorLightBlue' },
+      { id: 'blue', hex: '#2563eb', i18nKey: 'colorBlue' },
+      { id: 'royal_blue', hex: '#1e3a8a', i18nKey: 'colorRoyalBlue' },
+      { id: 'purple', hex: '#9333ea', i18nKey: 'colorPurple' },
+      { id: 'pink', hex: '#ec4899', i18nKey: 'colorPink' },
+      { id: 'light_pink', hex: '#f472b6', i18nKey: 'colorLightPink' },
+      { id: 'peach', hex: '#fbcfe8', i18nKey: 'colorPeach' },
+      { id: 'ivory', hex: '#fef3c7', i18nKey: 'colorIvory' }
+    ];
+
+    // --- 3. CORE STATE & GEOMETRY SETTINGS ---
+    let gridCols = 22; // default 22 columns on even rows
+    let gridRows = 26; // default 26 rows
+    const BEAD_RADIUS_PX = 10;
+    const BEAD_SPACING_X = BEAD_RADIUS_PX * 2 + 1;
+    const BEAD_SPACING_Y = BEAD_SPACING_X * 0.8660254; // Hex ratio sqrt(3)/2
+
+    function createEmptyGrid(rows, cols) {
+      const g = [];
+      for (let r = 0; r < rows; r++) {
+        const rowCols = (r % 2 === 0) ? cols : (cols - 1);
+        g.push(new Array(rowCols).fill(null));
+      }
+      return g;
+    }
+
+    let grid = createEmptyGrid(gridRows, gridCols);
+    let activeTool = 'pencil';
+    let activeType = 'round'; // 'round' | 'jewel' | 'star'
+    let activeColor = AQUABEADS_PALETTE[0]; // Orange
+    let isMouseDown = false;
+    let showGridDots = true;
+
+    // Cropper & Image states
+    let cropperInstance = null;
+    let rawUploadedImageSrc = null;
+    let croppedCanvasData = null;
+
+    // Canvas elements
+    const canvas = document.getElementById('bead-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Undo / Redo History
+    let historyStack = [];
+    let historyStep = -1;
+    const MAX_HISTORY = 40;
+
+    function recordHistory() {
+      if (historyStep < historyStack.length - 1) {
+        historyStack = historyStack.slice(0, historyStep + 1);
+      }
+      const snapshot = grid.map(row => row.map(cell => cell ? { ...cell } : null));
+      historyStack.push(snapshot);
+      if (historyStack.length > MAX_HISTORY) {
+        historyStack.shift();
+      } else {
+        historyStep++;
+      }
+      updateHistoryButtons();
+    }
+
+    function updateHistoryButtons() {
+      document.getElementById('btn-undo').disabled = (historyStep <= 0);
+      document.getElementById('btn-redo').disabled = (historyStep >= historyStack.length - 1);
+    }
+
+    function undo() {
+      if (historyStep > 0) {
+        historyStep--;
+        const state = historyStack[historyStep];
+        grid = state.map(row => row.map(cell => cell ? { ...cell } : null));
+        renderGrid();
+        updateHistoryButtons();
+      }
+    }
+
+    function redo() {
+      if (historyStep < historyStack.length - 1) {
+        historyStep++;
+        const state = historyStack[historyStep];
+        grid = state.map(row => row.map(cell => cell ? { ...cell } : null));
+        renderGrid();
+        updateHistoryButtons();
+      }
+    }
+
+    // Color conversion helpers (RGB to Lab color matching)
+    function hexToRgb(hex) {
+      const bigint = parseInt(hex.slice(1), 16);
+      return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+    }
+
+    function rgbToLab(r, g, b) {
+      let rN = r / 255, gN = g / 255, bN = b / 255;
+      rN = rN > 0.04045 ? Math.pow((rN + 0.055) / 1.055, 2.4) : rN / 12.92;
+      gN = gN > 0.04045 ? Math.pow((gN + 0.055) / 1.055, 2.4) : gN / 12.92;
+      bN = bN > 0.04045 ? Math.pow((bN + 0.055) / 1.055, 2.4) : bN / 12.92;
+
+      let x = (rN * 0.4124 + gN * 0.3576 + bN * 0.1805) / 0.95047;
+      let y = (rN * 0.2126 + gN * 0.7152 + bN * 0.0722) / 1.00000;
+      let z = (rN * 0.0193 + gN * 0.1192 + bN * 0.9505) / 1.08883;
+
+      x = x > 0.008856 ? Math.cbrt(x) : (7.787 * x) + (16 / 116);
+      y = y > 0.008856 ? Math.cbrt(y) : (7.787 * y) + (16 / 116);
+      z = z > 0.008856 ? Math.cbrt(z) : (7.787 * z) + (16 / 116);
+
+      return [(116 * y) - 16, 500 * (x - y), 200 * (y - z)];
+    }
+
+    const PALETTE_LAB = AQUABEADS_PALETTE.map(item => {
+      const [r, g, b] = hexToRgb(item.hex);
+      return { ...item, lab: rgbToLab(r, g, b) };
+    });
+
+    function findClosestColor(r, g, b) {
+      const lab = rgbToLab(r, g, b);
+      let closest = PALETTE_LAB[0];
+      let minDistance = Infinity;
+
+      for (let i = 0; i < PALETTE_LAB.length; i++) {
+        const p = PALETTE_LAB[i];
+        const dL = lab[0] - p.lab[0];
+        const da = lab[1] - p.lab[1];
+        const db = lab[2] - p.lab[2];
+        const dist = dL * dL + da * da + db * db;
+        if (dist < minDistance) {
+          minDistance = dist;
+          closest = p;
+        }
+      }
+      return closest;
+    }
+
+    // --- 4. BEAD RENDERERS (ROUND, FACETED JEWEL, STAR) ---
+    function drawRoundBead(context, cx, cy, radius, hex) {
+      context.save();
+      
+      // Drop Shadow
+      context.beginPath();
+      context.arc(cx, cy + 0.6, radius, 0, Math.PI * 2);
+      context.fillStyle = 'rgba(0,0,0,0.2)';
+      context.fill();
+
+      // Main spherical body
+      context.beginPath();
+      context.arc(cx, cy, radius - 0.5, 0, Math.PI * 2);
+      context.fillStyle = hex;
+      context.fill();
+      context.lineWidth = 1;
+      context.strokeStyle = 'rgba(0,0,0,0.38)';
+      context.stroke();
+
+      // Radial 3D depth sphere gradient
+      const grad = context.createRadialGradient(
+        cx - radius * 0.32, cy - radius * 0.32, radius * 0.08,
+        cx, cy, radius
+      );
+      grad.addColorStop(0, 'rgba(255, 255, 255, 0.72)');
+      grad.addColorStop(0.35, 'rgba(255, 255, 255, 0.12)');
+      grad.addColorStop(0.75, 'rgba(0, 0, 0, 0.15)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0.45)');
+
+      context.beginPath();
+      context.arc(cx, cy, radius - 0.8, 0, Math.PI * 2);
+      context.fillStyle = grad;
+      context.fill();
+
+      // Aquabeads signature indented groove ring
+      context.beginPath();
+      context.arc(cx, cy, radius * 0.52, 0, Math.PI * 2);
+      context.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      context.lineWidth = 1.1;
+      context.stroke();
+
+      // Highlight spot
+      context.beginPath();
+      context.arc(cx - radius * 0.35, cy - radius * 0.35, radius * 0.22, 0, Math.PI * 2);
+      context.fillStyle = '#ffffff';
+      context.fill();
+
+      context.restore();
+    }
+
+    function drawJewelBead(context, cx, cy, radius, hex) {
+      context.save();
+      const sides = 6;
+      
+      function makeHexPath(r) {
+        context.beginPath();
+        for (let i = 0; i < sides; i++) {
+          const angle = (i * Math.PI / 3) - Math.PI / 6;
+          const x = cx + r * Math.cos(angle);
+          const y = cy + r * Math.sin(angle);
+          if (i === 0) context.moveTo(x, y);
+          else context.lineTo(x, y);
+        }
+        context.closePath();
+      }
+
+      // Base hexagon
+      makeHexPath(radius);
+      context.fillStyle = hex;
+      context.fill();
+      context.strokeStyle = 'rgba(0,0,0,0.45)';
+      context.lineWidth = 1;
+      context.stroke();
+
+      // Center table facet
+      makeHexPath(radius * 0.52);
+      context.fillStyle = 'rgba(255, 255, 255, 0.28)';
+      context.fill();
+      context.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+      context.lineWidth = 0.8;
+      context.stroke();
+
+      // Facet ribs
+      for (let i = 0; i < sides; i++) {
+        const angle = (i * Math.PI / 3) - Math.PI / 6;
+        const x1 = cx + (radius * 0.52) * Math.cos(angle);
+        const y1 = cy + (radius * 0.52) * Math.sin(angle);
+        const x2 = cx + radius * Math.cos(angle);
+        const y2 = cy + radius * Math.sin(angle);
+        
+        context.beginPath();
+        context.moveTo(x1, y1);
+        context.lineTo(x2, y2);
+        context.strokeStyle = (i % 2 === 0) ? 'rgba(255,255,255,0.48)' : 'rgba(0,0,0,0.25)';
+        context.stroke();
+      }
+
+      // Sparkle
+      context.beginPath();
+      context.arc(cx - radius * 0.28, cy - radius * 0.28, radius * 0.2, 0, Math.PI * 2);
+      context.fillStyle = '#ffffff';
+      context.fill();
+
+      context.restore();
+    }
+
+    function drawStarBead(context, cx, cy, radius, hex) {
+      context.save();
+      const spikes = 5;
+      const outerRadius = radius;
+      const innerRadius = radius * 0.54;
+
+      function createStarPath() {
+        context.beginPath();
+        let rot = Math.PI / 2 * 3;
+        let step = Math.PI / spikes;
+        context.moveTo(cx, cy - outerRadius);
+
+        for (let i = 0; i < spikes; i++) {
+          let x = cx + Math.cos(rot) * outerRadius;
+          let y = cy + Math.sin(rot) * outerRadius;
+          context.lineTo(x, y);
+          rot += step;
+
+          x = cx + Math.cos(rot) * innerRadius;
+          y = cy + Math.sin(rot) * innerRadius;
+          context.lineTo(x, y);
+          rot += step;
+        }
+        context.lineTo(cx, cy - outerRadius);
+        context.closePath();
+      }
+
+      createStarPath();
+      context.fillStyle = hex;
+      context.fill();
+      context.strokeStyle = 'rgba(0,0,0,0.45)';
+      context.lineWidth = 1;
+      context.stroke();
+
+      // Fluting creases
+      for (let i = 0; i < spikes; i++) {
+        let angle = (i * 2 * Math.PI / spikes) - (Math.PI / 2);
+        let tipX = cx + Math.cos(angle) * outerRadius;
+        let tipY = cy + Math.sin(angle) * outerRadius;
+        
+        context.beginPath();
+        context.moveTo(cx, cy);
+        context.lineTo(tipX, tipY);
+        context.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+        context.lineWidth = 1.1;
+        context.stroke();
+      }
+
+      // Center dome
+      context.beginPath();
+      context.arc(cx, cy, radius * 0.35, 0, Math.PI * 2);
+      context.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      context.fill();
+      context.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+      context.lineWidth = 0.8;
+      context.stroke();
+
+      // Highlight
+      context.beginPath();
+      context.arc(cx - radius * 0.22, cy - radius * 0.28, radius * 0.18, 0, Math.PI * 2);
+      context.fillStyle = '#ffffff';
+      context.fill();
+
+      context.restore();
+    }
+
+    function renderBeadByType(context, cx, cy, radius, hex, type) {
+      if (type === 'jewel') {
+        drawJewelBead(context, cx, cy, radius, hex);
+      } else if (type === 'star') {
+        drawStarBead(context, cx, cy, radius, hex);
+      } else {
+        drawRoundBead(context, cx, cy, radius, hex);
+      }
+    }
+
+    // --- 5. GRID GEOMETRY (22 EVEN / 21 ODD ALTERNATING) ---
+    function updateCanvasDimensions() {
+      const margin = 20;
+      const totalWidth = (gridCols * BEAD_SPACING_X) + margin * 2;
+      const totalHeight = (gridRows * BEAD_SPACING_Y) + margin * 2;
+
+      canvas.width = totalWidth;
+      canvas.height = totalHeight;
+      renderGrid();
+    }
+
+    function getGridCoord(row, col) {
+      const margin = 20;
+      const isOdd = (row % 2 === 1);
+      const offsetX = isOdd ? (BEAD_SPACING_X * 0.5) : 0;
+      
+      const x = margin + (col * BEAD_SPACING_X) + offsetX + (BEAD_SPACING_X / 2);
+      const y = margin + (row * BEAD_SPACING_Y) + (BEAD_SPACING_Y / 2);
+      return { x, y };
+    }
+
+    function getCellFromPixel(px, py) {
+      let closestDist = Infinity;
+      let closestCell = null;
+
+      for (let r = 0; r < gridRows; r++) {
+        const rowCols = grid[r].length;
+        for (let c = 0; c < rowCols; c++) {
+          const { x, y } = getGridCoord(r, c);
+          const dx = px - x;
+          const dy = py - y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < closestDist && dist <= BEAD_RADIUS_PX * 1.3) {
+            closestDist = dist;
+            closestCell = { r, c };
+          }
+        }
+      }
+      return closestCell;
+    }
+
+    // --- 6. RENDER ENGINE ---
+    function renderGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Draw empty tray sockets
+      if (showGridDots) {
+        for (let r = 0; r < gridRows; r++) {
+          const rowCols = grid[r].length;
+          for (let c = 0; c < rowCols; c++) {
+            if (!grid[r][c]) {
+              const { x, y } = getGridCoord(r, c);
+              ctx.beginPath();
+              ctx.arc(x, y, 2.3, 0, Math.PI * 2);
+              ctx.fillStyle = '#cbd5e1';
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      // 2. Draw active beads
+      for (let r = 0; r < gridRows; r++) {
+        const rowCols = grid[r].length;
+        for (let c = 0; c < rowCols; c++) {
+          const bead = grid[r][c];
+          if (bead) {
+            const { x, y } = getGridCoord(r, c);
+            renderBeadByType(ctx, x, y, BEAD_RADIUS_PX, bead.hex, bead.type);
+          }
+        }
+      }
+
+      updateTallyCounter();
+    }
+
+    // --- 7. BEAD COUNT TALLY PANEL ---
+    function updateTallyCounter() {
+      const tallyContainer = document.getElementById('tally-container');
+      const tallyEmpty = document.getElementById('tally-empty');
+      const totalCountElem = document.getElementById('total-beads-count');
+      if (!tallyContainer) return;
+
+      const tallies = {};
+      let totalCount = 0;
+
+      for (let r = 0; r < gridRows; r++) {
+        for (let c = 0; c < grid[r].length; c++) {
+          const b = grid[r][c];
+          if (b) {
+            const key = `${b.colorId}_${b.type}`;
+            if (!tallies[key]) {
+              tallies[key] = {
+                colorId: b.colorId,
+                hex: b.hex,
+                type: b.type,
+                count: 0
+              };
+            }
+            tallies[key].count++;
+            totalCount++;
+          }
+        }
+      }
+
+      totalCountElem.textContent = totalCount;
+
+      const items = Object.values(tallies);
+      if (items.length === 0) {
+        tallyContainer.innerHTML = '';
+        if (tallyEmpty) tallyEmpty.classList.remove('hidden');
+        return;
+      }
+
+      if (tallyEmpty) tallyEmpty.classList.add('hidden');
+      tallyContainer.innerHTML = '';
+
+      // Order by count descending matching reference image
+      items.sort((a, b) => b.count - a.count);
+
+      items.forEach(item => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'flex items-center justify-between text-slate-800 font-semibold';
+
+        // Canvas miniature preview
+        const iconCanvas = document.createElement('canvas');
+        iconCanvas.width = 24;
+        iconCanvas.height = 24;
+        const iconCtx = iconCanvas.getContext('2d');
+        renderBeadByType(iconCtx, 12, 12, 9, item.hex, item.type);
+
+        rowDiv.appendChild(iconCanvas);
+
+        // Dot leader (· · ·)
+        const leader = document.createElement('div');
+        leader.className = 'dotted-leader';
+        rowDiv.appendChild(leader);
+
+        // Bead Count
+        const countSpan = document.createElement('span');
+        countSpan.className = 'w-9 text-right font-bold text-slate-700 text-sm font-mono-num';
+        countSpan.textContent = item.count;
+        rowDiv.appendChild(countSpan);
+
+        tallyContainer.appendChild(rowDiv);
+      });
+    }
+
+    // --- 8. PALETTE RENDERING (FIX FOR EMPTY PALETTE) ---
+    function renderPalette() {
+      const paletteContainer = document.getElementById('palette-grid');
+      if (!paletteContainer) return;
+      paletteContainer.innerHTML = '';
+
+      const t = TRANSLATIONS[currentLang] || TRANSLATIONS.nl;
+
+      AQUABEADS_PALETTE.forEach(item => {
+        const btn = document.createElement('button');
+        const isActive = (item.id === activeColor.id);
+        
+        btn.className = `palette-item w-9 h-9 rounded-full border-2 transition-transform transform hover:scale-110 flex items-center justify-center relative shadow-xs ${isActive ? 'border-pink-600 ring-2 ring-pink-300 scale-105' : 'border-slate-300'}`;
+        btn.style.backgroundColor = item.hex;
+        btn.title = t[item.i18nKey] || item.id;
+        
+        // Inner highlight / check
+        if (isActive) {
+          const checkIcon = (item.id === 'white' || item.id === 'pastel_yellow' || item.id === 'ivory') 
+            ? 'text-slate-900' 
+            : 'text-white';
+          btn.innerHTML = `<i class="fa-solid fa-check text-xs ${checkIcon} font-bold drop-shadow-xs"></i>`;
+        } else {
+          btn.innerHTML = `<span class="w-2 h-2 rounded-full bg-white opacity-40 absolute top-1.5 right-1.5"></span>`;
+        }
+
+        btn.addEventListener('click', () => {
+          activeColor = item;
+          renderPalette();
+        });
+
+        paletteContainer.appendChild(btn);
+      });
+
+      const colorNameElem = document.getElementById('active-color-name');
+      if (colorNameElem) {
+        colorNameElem.textContent = t[activeColor.i18nKey] || activeColor.id;
+      }
+    }
+
+    // --- 9. DRAWING & EDITING TOOLS ---
+    function applyTool(cell) {
+      if (!cell) return;
+      const { r, c } = cell;
+
+      if (activeTool === 'pencil') {
+        const existing = grid[r][c];
+        if (!existing || existing.colorId !== activeColor.id || existing.type !== activeType) {
+          grid[r][c] = {
+            colorId: activeColor.id,
+            hex: activeColor.hex,
+            type: activeType
+          };
+          renderGrid();
+        }
+      } else if (activeTool === 'eraser') {
+        if (grid[r][c] !== null) {
+          grid[r][c] = null;
+          renderGrid();
+        }
+      } else if (activeTool === 'eyedropper') {
+        const target = grid[r][c];
+        if (target) {
+          const found = AQUABEADS_PALETTE.find(p => p.id === target.colorId);
+          if (found) {
+            activeColor = found;
+            activeType = target.type;
+            updateBeadTypeButtons();
+            renderPalette();
+          }
+        }
+      } else if (activeTool === 'fill') {
+        floodFill(r, c);
+      }
+    }
+
+    function floodFill(startR, startC) {
+      const target = grid[startR][startC];
+      const targetKey = target ? `${target.colorId}_${target.type}` : null;
+      const fillKey = `${activeColor.id}_${activeType}`;
+
+      if (targetKey === fillKey) return;
+
+      const queue = [[startR, startC]];
+      const visited = new Set();
+
+      while (queue.length > 0) {
+        const [r, c] = queue.pop();
+        const coordKey = `${r},${c}`;
+        if (visited.has(coordKey)) continue;
+        visited.add(coordKey);
+
+        const current = grid[r][c];
+        const currentKey = current ? `${current.colorId}_${current.type}` : null;
+
+        if (currentKey === targetKey) {
+          grid[r][c] = {
+            colorId: activeColor.id,
+            hex: activeColor.hex,
+            type: activeType
+          };
+
+          const isEven = (r % 2 === 0);
+          const neighbors = isEven ? [
+            [r, c - 1], [r, c + 1],
+            [r - 1, c - 1], [r - 1, c],
+            [r + 1, c - 1], [r + 1, c]
+          ] : [
+            [r, c - 1], [r, c + 1],
+            [r - 1, c], [r - 1, c + 1],
+            [r + 1, c], [r + 1, c + 1]
+          ];
+
+          for (const [nr, nc] of neighbors) {
+            if (nr >= 0 && nr < gridRows && nc >= 0 && nc < grid[nr].length) {
+              queue.push([nr, nc]);
+            }
+          }
+        }
+      }
+      renderGrid();
+      recordHistory();
+    }
+
+    // Canvas Events
+    canvas.addEventListener('mousedown', (e) => {
+      isMouseDown = true;
+      const rect = canvas.getBoundingClientRect();
+      const cell = getCellFromPixel(e.clientX - rect.left, e.clientY - rect.top);
+      applyTool(cell);
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isMouseDown) {
+        isMouseDown = false;
+        recordHistory();
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isMouseDown) return;
+      if (activeTool !== 'pencil' && activeTool !== 'eraser') return;
+      const rect = canvas.getBoundingClientRect();
+      const cell = getCellFromPixel(e.clientX - rect.left, e.clientY - rect.top);
+      applyTool(cell);
+    });
+
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      isMouseDown = true;
+      const touch = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      const cell = getCellFromPixel(touch.clientX - rect.left, touch.clientY - rect.top);
+      applyTool(cell);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (!isMouseDown) return;
+      const touch = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      const cell = getCellFromPixel(touch.clientX - rect.left, touch.clientY - rect.top);
+      applyTool(cell);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', () => {
+      if (isMouseDown) {
+        isMouseDown = false;
+        recordHistory();
+      }
+    });
+
+    // --- 10. MANUAL IMAGE CROPPER MODAL LOGIC ---
+    const cropModal = document.getElementById('crop-modal');
+    const cropperImage = document.getElementById('cropper-image');
+
+    function openCropper(imageSrc) {
+      cropModal.classList.remove('hidden');
+      cropperImage.src = imageSrc;
+
+      if (cropperInstance) {
+        cropperInstance.destroy();
+      }
+
+      cropperInstance = new Cropper(cropperImage, {
+        aspectRatio: 1,
+        viewMode: 1,
+        autoCropArea: 0.9,
+        background: false,
+        responsive: true
+      });
+    }
+
+    function closeCropper() {
+      cropModal.classList.add('hidden');
+      if (cropperInstance) {
+        cropperInstance.destroy();
+        cropperInstance = null;
+      }
+    }
+
+    document.getElementById('image-upload').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        rawUploadedImageSrc = evt.target.result;
+        document.getElementById('btn-open-crop').classList.remove('hidden');
+        openCropper(rawUploadedImageSrc);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    });
+
+    document.getElementById('btn-open-crop').addEventListener('click', () => {
+      if (rawUploadedImageSrc) openCropper(rawUploadedImageSrc);
+    });
+
+    document.getElementById('btn-close-crop').addEventListener('click', closeCropper);
+    document.getElementById('btn-cancel-crop').addEventListener('click', closeCropper);
+
+    document.getElementById('btn-crop-aspect-square').addEventListener('click', () => {
+      if (cropperInstance) cropperInstance.setAspectRatio(1);
+    });
+    document.getElementById('btn-crop-aspect-free').addEventListener('click', () => {
+      if (cropperInstance) cropperInstance.setAspectRatio(NaN);
+    });
+    document.getElementById('btn-crop-rotate').addEventListener('click', () => {
+      if (cropperInstance) cropperInstance.rotate(90);
+    });
+
+    document.getElementById('btn-apply-crop').addEventListener('click', () => {
+      if (!cropperInstance) return;
+      croppedCanvasData = cropperInstance.getCroppedCanvas({
+        maxWidth: 1024,
+        maxHeight: 1024
+      });
+      closeCropper();
+      document.getElementById('image-controls').classList.remove('hidden');
+      processCroppedImageToGrid();
+    });
+
+    // --- 11. PIXEL SAMPLING ONTO 22x26 STAGGERED GRID ---
+    function processCroppedImageToGrid() {
+      if (!croppedCanvasData) return;
+
+      const bgThresh = parseInt(document.getElementById('input-bg-thresh').value, 10);
+      const offCanvas = document.getElementById('offscreen-canvas');
+      const offCtx = offCanvas.getContext('2d');
+
+      offCanvas.width = canvas.width;
+      offCanvas.height = canvas.height;
+
+      const pad = 24;
+      const drawW = canvas.width - pad * 2;
+      const drawH = canvas.height - pad * 2;
+
+      offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
+
+      const imgRatio = croppedCanvasData.width / croppedCanvasData.height;
+      const targetRatio = drawW / drawH;
+      let fw, fh, dx, dy;
+
+      if (imgRatio > targetRatio) {
+        fw = drawW;
+        fh = drawW / imgRatio;
+        dx = pad;
+        dy = pad + (drawH - fh) / 2;
+      } else {
+        fh = drawH;
+        fw = drawH * imgRatio;
+        dy = pad;
+        dx = pad + (drawW - fw) / 2;
+      }
+
+      offCtx.drawImage(croppedCanvasData, dx, dy, fw, fh);
+      const imgData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height).data;
+
+      grid = createEmptyGrid(gridRows, gridCols);
+
+      for (let r = 0; r < gridRows; r++) {
+        const rowCols = grid[r].length;
+        for (let c = 0; c < rowCols; c++) {
+          const { x, y } = getGridCoord(r, c);
+          const px = Math.round(x);
+          const py = Math.round(y);
+
+          if (px >= 0 && px < offCanvas.width && py >= 0 && py < offCanvas.height) {
+            let rSum = 0, gSum = 0, bSum = 0, aSum = 0, samples = 0;
+            for (let ox = -1; ox <= 1; ox++) {
+              for (let oy = -1; oy <= 1; oy++) {
+                const idx = ((py + oy) * offCanvas.width + (px + ox)) * 4;
+                if (idx >= 0 && idx < imgData.length) {
+                  rSum += imgData[idx];
+                  gSum += imgData[idx + 1];
+                  bSum += imgData[idx + 2];
+                  aSum += imgData[idx + 3];
+                  samples++;
+                }
+              }
+            }
+
+            const avgA = aSum / samples;
+            const avgR = rSum / samples;
+            const avgG = gSum / samples;
+            const avgB = bSum / samples;
+
+            const isTransparent = avgA < 40;
+            const isWhiteBg = (avgR > bgThresh && avgG > bgThresh && avgB > bgThresh);
+
+            if (!isTransparent && !isWhiteBg) {
+              const matched = findClosestColor(avgR, avgG, avgB);
+              
+              let beadType = 'round';
+              if (matched.id === 'honey' || matched.id === 'caramel') {
+                beadType = 'jewel';
+              } else if (matched.id === 'yellow') {
+                beadType = 'star';
+              }
+
+              grid[r][c] = {
+                colorId: matched.id,
+                hex: matched.hex,
+                type: beadType
+              };
+            }
+          }
+        }
+      }
+
+      renderGrid();
+      recordHistory();
+    }
+
+    // --- 12. DEFAULT 36-BEAD SAMPLE (AFBEELDING_2.PNG) ---
+    function loadSample36Beads() {
+      gridCols = 22;
+      gridRows = 26;
+      document.getElementById('input-grid-cols').value = gridCols;
+      document.getElementById('input-grid-rows').value = gridRows;
+      document.getElementById('grid-cols-label').textContent = gridCols;
+      document.getElementById('grid-rows-label').textContent = gridRows;
+      
+      grid = createEmptyGrid(gridRows, gridCols);
+      updateCanvasDimensions();
+
+      const bGreen = { colorId: 'green', hex: '#22c55e', type: 'round' };
+      const bBlack = { colorId: 'black', hex: '#262626', type: 'round' };
+      const bWhite = { colorId: 'white', hex: '#f8fafc', type: 'round' };
+      const bOrange = { colorId: 'orange', hex: '#ff8800', type: 'round' };
+      const jHoney = { colorId: 'honey', hex: '#ca7a20', type: 'jewel' };
+
+      // Exact 36 Beads from afbeelding_2.png:
+      // 1. Green round stem (3 beads)
+      grid[9][12] = bGreen;
+      grid[10][11] = bGreen;
+      grid[11][11] = bGreen;
+
+      // 2. Row 12 (even, 22 positions): 3 beads (3 orange round)
+      grid[12][10] = bOrange;
+      grid[12][11] = bOrange;
+      grid[12][12] = bOrange;
+
+      // 3. Row 13 (odd, 21 positions): 5 beads (orange round, black eyes)
+      grid[13][9] = bOrange;
+      grid[13][10] = bBlack;   // eye left
+      grid[13][11] = bOrange;
+      grid[13][12] = bBlack;   // eye right
+      grid[13][13] = bOrange;
+
+      // 4. Row 14 (even, 22 positions): 6 beads (1 orange, 1 honey jewel, 1 orange, 1 orange, 1 honey jewel, 1 orange)
+      grid[14][9] = bOrange;
+      grid[14][10] = jHoney;
+      grid[14][11] = bOrange;
+      grid[14][12] = bOrange;
+      grid[14][13] = jHoney;
+      grid[14][14] = bOrange;
+
+      // 5. Row 15 (odd, 21 positions): 7 beads (1 honey jewel, 1 orange, 3 white mouth, 1 orange, 1 honey jewel)
+      grid[15][8] = jHoney;
+      grid[15][9] = bOrange;
+      grid[15][10] = bWhite;  // mouth 1
+      grid[15][11] = bWhite;  // mouth 2
+      grid[15][12] = bWhite;  // mouth 3
+      grid[15][13] = bOrange;
+      grid[15][14] = jHoney;
+
+      // 6. Row 16 (even, 22 positions): 7 beads (1 honey jewel, 5 orange round, 1 honey jewel)
+      grid[16][9] = jHoney;
+      grid[16][10] = bOrange;
+      grid[16][11] = bOrange;
+      grid[16][12] = bOrange;
+      grid[16][13] = bOrange;
+      grid[16][14] = bOrange;
+      grid[16][15] = jHoney;
+
+      // 7. Row 17 (odd, 21 positions): 5 beads (all honey jewels on bottom base)
+      grid[17][9] = jHoney;
+      grid[17][10] = jHoney;
+      grid[17][11] = jHoney;
+      grid[17][12] = jHoney;
+      grid[17][13] = jHoney;
+
+      // Sum: 3 green + 2 black + 3 white + 19 orange + 9 honey jewel = 36 total!
+      renderGrid();
+      recordHistory();
+    }
+
+    // --- 13. RELIABLE 1:1 SCALE PDF EXPORT ENGINE ---
+    async function exportToPDF() {
+      const t = TRANSLATIONS[currentLang] || TRANSLATIONS.nl;
+      try {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          throw new Error("jsPDF library not available");
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+          compress: true
+        });
+
+        const beadDiamMm = 5.0; // 5mm peg pitch
+        const stepXMm = beadDiamMm;
+        const stepYMm = beadDiamMm * 0.8660254;
+
+        const trayMarginMm = 8;
+        const gridWMm = (gridCols * stepXMm);
+        const gridHMm = (gridRows * stepYMm);
+
+        const frameWMm = gridWMm + trayMarginMm * 2;
+        const frameHMm = gridHMm + trayMarginMm * 2;
+
+        const startXMm = 12;
+        const startYMm = 20;
+
+        // 1. Pink Outer Cut-out Border
+        doc.setDrawColor(255, 64, 153);
+        doc.setLineWidth(1.6);
+        doc.roundedRect(startXMm, startYMm, frameWMm, frameHMm, 3, 3, 'S');
+
+        // 2. Corner Alignment Peg Holes
+        doc.setDrawColor(50, 50, 50);
+        doc.setLineWidth(0.4);
+        doc.circle(startXMm + 6, startYMm + 6, 2.5);
+        doc.circle(startXMm + frameWMm - 6, startYMm + frameHMm - 6, 2.5);
+
+        // 3. Render Grid & Beads
+        for (let r = 0; r < gridRows; r++) {
+          const rowCols = grid[r].length;
+          const isOdd = (r % 2 === 1);
+          const rowOffsetX = isOdd ? (stepXMm * 0.5) : 0;
+
+          for (let c = 0; c < rowCols; c++) {
+            const cx = startXMm + trayMarginMm + (c * stepXMm) + rowOffsetX + (stepXMm / 2);
+            const cy = startYMm + trayMarginMm + (r * stepYMm) + (stepYMm / 2);
+            const bead = grid[r][c];
+
+            if (bead) {
+              const rgb = hexToRgb(bead.hex);
+              doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+              doc.setDrawColor(40, 40, 40);
+              doc.setLineWidth(0.18);
+
+              if (bead.type === 'jewel') {
+                const pts = [];
+                for (let i = 0; i < 6; i++) {
+                  const a = (i * Math.PI / 3) - Math.PI / 6;
+                  pts.push([
+                    cx + (beadDiamMm / 2) * Math.cos(a),
+                    cy + (beadDiamMm / 2) * Math.sin(a)
+                  ]);
+                }
+                doc.polygon(pts, 'FD');
+              } else if (bead.type === 'star') {
+                const pts = [];
+                const spikes = 5;
+                let rot = Math.PI / 2 * 3;
+                let step = Math.PI / spikes;
+                const or = beadDiamMm / 2;
+                const ir = or * 0.52;
+
+                for (let i = 0; i < spikes; i++) {
+                  pts.push([cx + Math.cos(rot) * or, cy + Math.sin(rot) * or]);
+                  rot += step;
+                  pts.push([cx + Math.cos(rot) * ir, cy + Math.sin(rot) * ir]);
+                  rot += step;
+                }
+                doc.polygon(pts, 'FD');
+              } else {
+                doc.circle(cx, cy, beadDiamMm / 2, 'FD');
+              }
+            } else {
+              doc.setFillColor(210, 215, 225);
+              doc.circle(cx, cy, 0.35, 'F');
+            }
+          }
+        }
+
+        // 4. Right Side: Bead Count Legend
+        const tallyStartX = startXMm + frameWMm + 10;
+        let tallyCurrentY = startYMm + 8;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(30, 41, 59);
+        doc.text(t.tallyHeading.toUpperCase(), tallyStartX, tallyCurrentY);
+        tallyCurrentY += 7;
+
+        const tallies = {};
+        for (let r = 0; r < gridRows; r++) {
+          for (let c = 0; c < grid[r].length; c++) {
+            const b = grid[r][c];
+            if (b) {
+              const k = `${b.colorId}_${b.type}`;
+              if (!tallies[k]) tallies[k] = { ...b, count: 0 };
+              tallies[k].count++;
+            }
+          }
+        }
+
+        const tallyItems = Object.values(tallies).sort((a, b) => b.count - a.count);
+
+        tallyItems.forEach(item => {
+          const rgb = hexToRgb(item.hex);
+          doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+          doc.setDrawColor(40, 40, 40);
+          doc.setLineWidth(0.15);
+
+          if (item.type === 'jewel') {
+            const pts = [];
+            for (let i = 0; i < 6; i++) {
+              const a = (i * Math.PI / 3) - Math.PI / 6;
+              pts.push([
+                tallyStartX + 2.5 + 2.2 * Math.cos(a),
+                tallyCurrentY - 1 + 2.2 * Math.sin(a)
+              ]);
+            }
+            doc.polygon(pts, 'FD');
+          } else if (item.type === 'star') {
+            const pts = [];
+            let rot = Math.PI / 2 * 3;
+            let step = Math.PI / 5;
+            for (let i = 0; i < 5; i++) {
+              pts.push([tallyStartX + 2.5 + Math.cos(rot) * 2.2, tallyCurrentY - 1 + Math.sin(rot) * 2.2]);
+              rot += step;
+              pts.push([tallyStartX + 2.5 + Math.cos(rot) * 1.1, tallyCurrentY - 1 + Math.sin(rot) * 1.1]);
+              rot += step;
+            }
+            doc.polygon(pts, 'FD');
+          } else {
+            doc.circle(tallyStartX + 2.5, tallyCurrentY - 1, 2.2, 'FD');
+          }
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(100, 116, 139);
+          doc.text('.  .  .', tallyStartX + 8, tallyCurrentY);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(15, 23, 42);
+          doc.text(String(item.count), tallyStartX + 20, tallyCurrentY);
+
+          tallyCurrentY += 6.5;
+        });
+
+        // 5. Footer Scale Note
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(120, 120, 120);
+        doc.text("Schaal / Scale: 100% (geen pagina-aanpassing / do not scale)", startXMm, startYMm + frameHMm + 7);
+
+        doc.save('aquabeads-template-22x26.pdf');
+      } catch (err) {
+        console.error("PDF generation error:", err);
+        alert(t.pdfError || "Error generating PDF. Using browser print as alternative.");
+        window.print();
+      }
+    }
+
+    // --- 14. PNG EXPORT ---
+    function exportToPNG() {
+      const exportCanvas = document.createElement('canvas');
+      const exCtx = exportCanvas.getContext('2d');
+
+      const width = canvas.width + 330;
+      const height = Math.max(canvas.height + 70, 520);
+
+      exportCanvas.width = width;
+      exportCanvas.height = height;
+
+      exCtx.fillStyle = '#ffffff';
+      exCtx.fillRect(0, 0, width, height);
+
+      const fx = 25, fy = 25;
+      const fw = canvas.width + 24;
+      const fh = canvas.height + 24;
+
+      exCtx.lineWidth = 6;
+      exCtx.strokeStyle = '#ff4099';
+      exCtx.strokeRect(fx, fy, fw, fh);
+
+      exCtx.lineWidth = 2;
+      exCtx.strokeStyle = '#334155';
+      exCtx.beginPath();
+      exCtx.arc(fx + 16, fy + 16, 8, 0, Math.PI * 2);
+      exCtx.stroke();
+
+      exCtx.beginPath();
+      exCtx.arc(fx + fw - 16, fy + fh - 16, 8, 0, Math.PI * 2);
+      exCtx.stroke();
+
+      exCtx.drawImage(canvas, fx + 12, fy + 12);
+
+      const tx = fx + fw + 30;
+      let ty = fy + 26;
+
+      exCtx.fillStyle = '#1e293b';
+      exCtx.font = 'bold 16px Nunito, sans-serif';
+      const t = TRANSLATIONS[currentLang] || TRANSLATIONS.nl;
+      exCtx.fillText(t.tallyHeading.toUpperCase(), tx, ty);
+      ty += 28;
+
+      const tallies = {};
+      for (let r = 0; r < gridRows; r++) {
+        for (let c = 0; c < grid[r].length; c++) {
+          const b = grid[r][c];
+          if (b) {
+            const k = `${b.colorId}_${b.type}`;
+            if (!tallies[k]) tallies[k] = { ...b, count: 0 };
+            tallies[k].count++;
+          }
+        }
+      }
+
+      Object.values(tallies).sort((a,b) => b.count - a.count).forEach(item => {
+        renderBeadByType(exCtx, tx + 10, ty - 5, 8.5, item.hex, item.type);
+
+        exCtx.font = 'bold 13px monospace';
+        exCtx.fillStyle = '#64748b';
+        exCtx.fillText('· · ·', tx + 28, ty);
+
+        exCtx.fillStyle = '#0f172a';
+        exCtx.fillText(String(item.count), tx + 68, ty);
+
+        ty += 24;
+      });
+
+      const link = document.createElement('a');
+      link.download = 'aquabeads-template-22x26.png';
+      link.href = exportCanvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // --- 15. UI EVENT HANDLERS ---
+    function updateBeadTypeButtons() {
+      const btnRound = document.getElementById('type-round');
+      const btnJewel = document.getElementById('type-jewel');
+      const btnStar = document.getElementById('type-star');
+
+      [btnRound, btnJewel, btnStar].forEach(b => {
+        b.classList.remove('active', 'bg-white', 'text-slate-800', 'shadow-xs');
+        b.classList.add('text-slate-600');
+      });
+
+      let targetBtn = btnRound;
+      if (activeType === 'jewel') targetBtn = btnJewel;
+      if (activeType === 'star') targetBtn = btnStar;
+
+      targetBtn.classList.add('active', 'bg-white', 'text-slate-800', 'shadow-xs');
+      targetBtn.classList.remove('text-slate-600');
+    }
+
+    // Tools
+    document.querySelectorAll('.tool-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tool-btn').forEach(b => {
+          b.classList.remove('active', 'bg-white', 'text-pink-600', 'shadow-xs');
+          b.classList.add('text-slate-600');
+        });
+        btn.classList.add('active', 'bg-white', 'text-pink-600', 'shadow-xs');
+        btn.classList.remove('text-slate-600');
+        activeTool = btn.dataset.tool;
+      });
+    });
+
+    // Bead types
+    document.getElementById('type-round').addEventListener('click', () => {
+      activeType = 'round';
+      updateBeadTypeButtons();
+    });
+    document.getElementById('type-jewel').addEventListener('click', () => {
+      activeType = 'jewel';
+      updateBeadTypeButtons();
+    });
+    document.getElementById('type-star').addEventListener('click', () => {
+      activeType = 'star';
+      updateBeadTypeButtons();
+    });
+
+    // Clear Canvas with confirmation
+    document.getElementById('btn-clear-grid').addEventListener('click', () => {
+      const t = TRANSLATIONS[currentLang] || TRANSLATIONS.nl;
+      if (confirm(t.confirmClear)) {
+        grid = createEmptyGrid(gridRows, gridCols);
+        renderGrid();
+        recordHistory();
+      }
+    });
+
+    // Undo / Redo
+    document.getElementById('btn-undo').addEventListener('click', undo);
+    document.getElementById('btn-redo').addEventListener('click', redo);
+
+    // Dimension sliders
+    document.getElementById('input-grid-cols').addEventListener('input', (e) => {
+      gridCols = parseInt(e.target.value, 10);
+      document.getElementById('grid-cols-label').textContent = gridCols;
+      grid = createEmptyGrid(gridRows, gridCols);
+      updateCanvasDimensions();
+      if (croppedCanvasData) processCroppedImageToGrid();
+      else recordHistory();
+    });
+
+    document.getElementById('input-grid-rows').addEventListener('input', (e) => {
+      gridRows = parseInt(e.target.value, 10);
+      document.getElementById('grid-rows-label').textContent = gridRows;
+      grid = createEmptyGrid(gridRows, gridCols);
+      updateCanvasDimensions();
+      if (croppedCanvasData) processCroppedImageToGrid();
+      else recordHistory();
+    });
+
+    // Background threshold
+    document.getElementById('input-bg-thresh').addEventListener('input', (e) => {
+      document.getElementById('bg-val').textContent = e.target.value;
+    });
+    document.getElementById('btn-reprocess').addEventListener('click', processCroppedImageToGrid);
+
+    // Grid toggle
+    document.getElementById('check-show-grid').addEventListener('change', (e) => {
+      showGridDots = e.target.checked;
+      renderGrid();
+    });
+
+    // Language Selector
+    document.getElementById('lang-select').addEventListener('change', (e) => {
+      setLanguage(e.target.value);
+    });
+
+    // Top action buttons
+    document.getElementById('btn-load-sample').addEventListener('click', loadSample36Beads);
+    document.getElementById('btn-print').addEventListener('click', () => window.print());
+    document.getElementById('btn-export-pdf').addEventListener('click', exportToPDF);
+    document.getElementById('btn-export-png').addEventListener('click', exportToPNG);
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    });
+
+    // --- 16. BOOTSTRAP (RUNS ON BOTH DOMCONTENTLOADED AND ONLOAD) ---
+    function initializeStudio() {
+      renderPalette();
+      updateCanvasDimensions();
+      loadSample36Beads();
+      setLanguage('nl');
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeStudio);
+    } else {
+      initializeStudio();
+    }
+  </script>
+</body>
+</html>
